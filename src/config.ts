@@ -21,6 +21,9 @@ export type Config = {
   auth: {
     tokens: TokenEntry[]
   }
+  oauth: {
+    refresh_token: string
+  }
   identity: {
     device_id: string
     email: string
@@ -43,12 +46,14 @@ export function loadConfig(configPath?: string): Config {
   const raw = readFileSync(filePath, 'utf-8')
   const config = parse(raw) as Config
 
-  // Validate required fields
   if (!config.identity?.device_id || config.identity.device_id.includes('0000000000')) {
     throw new Error('config: identity.device_id must be set to a real 64-char hex value. Run: npm run generate-identity')
   }
   if (!config.auth?.tokens?.length) {
     throw new Error('config: auth.tokens must have at least one entry')
+  }
+  if (!config.oauth?.refresh_token) {
+    throw new Error('config: oauth.refresh_token is required. Do a browser OAuth login on the admin machine, then copy the refresh token from ~/.claude/.credentials.json')
   }
 
   return config

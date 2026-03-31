@@ -1,17 +1,16 @@
 #!/bin/bash
 # CC Gateway Client Setup
 # Run this on each client machine to configure Claude Code to use the gateway.
+# Client machines NEVER contact Anthropic directly.
 
 set -e
 
 echo "=== CC Gateway Client Setup ==="
 echo ""
 
-# Prompt for gateway URL and token
 read -p "Gateway URL (e.g., https://gateway.office.com:8443): " GATEWAY_URL
 read -p "Your bearer token: " BEARER_TOKEN
 
-# Validate
 if [[ -z "$GATEWAY_URL" || -z "$BEARER_TOKEN" ]]; then
   echo "Error: Gateway URL and token are required."
   exit 1
@@ -26,32 +25,44 @@ else
   RC_FILE="$HOME/.profile"
 fi
 
+ENV_BLOCK="
+# === CC Gateway ===
+# Route all Claude Code API traffic through the gateway
+export ANTHROPIC_BASE_URL=\"$GATEWAY_URL\"
+# Disable all side-channel telemetry (Datadog, GrowthBook, updates)
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+# Placeholder token - gateway injects the real OAuth token
+export CLAUDE_CODE_OAUTH_TOKEN=\"gateway-managed\"
+# Gateway proxy auth - your personal access token
+export ANTHROPIC_CUSTOM_HEADERS=\"Proxy-Authorization: Bearer $BEARER_TOKEN\"
+# === End CC Gateway ==="
+
 echo ""
 echo "Will add to: $RC_FILE"
 echo ""
-
-# Build the env block
-ENV_BLOCK="
-# === CC Gateway ===
-export ANTHROPIC_BASE_URL=\"$GATEWAY_URL\"
-export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
-export ANTHROPIC_CUSTOM_HEADERS=\"Authorization: Bearer $BEARER_TOKEN\"
-# === End CC Gateway ==="
-
-echo "Adding environment variables:"
-echo "$ENV_BLOCK"
+echo "Environment variables:"
+echo "  ANTHROPIC_BASE_URL=$GATEWAY_URL"
+echo "  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1"
+echo "  CLAUDE_CODE_OAUTH_TOKEN=gateway-managed"
+echo "  ANTHROPIC_CUSTOM_HEADERS=Proxy-Authorization: Bearer <token>"
+echo ""
+echo "Effect:"
+echo "  - All API traffic routes through gateway (no direct Anthropic contact)"
+echo "  - Gateway injects real OAuth token (no browser login needed)"
+echo "  - Telemetry side-channels disabled"
 echo ""
 
 read -p "Continue? [y/N] " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-  # Remove old block if present
   sed -i.bak '/# === CC Gateway ===/,/# === End CC Gateway ===/d' "$RC_FILE" 2>/dev/null || true
   echo "$ENV_BLOCK" >> "$RC_FILE"
+  echo ""
   echo "Done! Run: source $RC_FILE"
   echo ""
-  echo "To verify: echo \$ANTHROPIC_BASE_URL"
+  echo "Then start Claude Code normally: claude"
+  echo "(No login needed - gateway handles auth)"
 else
   echo "Aborted."
 fi

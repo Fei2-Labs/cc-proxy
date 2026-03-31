@@ -217,8 +217,8 @@ export function rewriteHeaders(
     const v = Array.isArray(value) ? value.join(', ') : value
     const lower = key.toLowerCase()
 
-    // Skip hop-by-hop headers
-    if (['host', 'connection', 'proxy-authorization', 'proxy-connection', 'transfer-encoding'].includes(lower)) {
+    // Skip hop-by-hop headers and auth (gateway injects the real OAuth token)
+    if (['host', 'connection', 'proxy-authorization', 'proxy-connection', 'transfer-encoding', 'authorization'].includes(lower)) {
       continue
     }
 

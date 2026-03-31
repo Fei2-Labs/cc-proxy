@@ -5,6 +5,7 @@ import { request as httpsRequest } from 'https'
 import { URL } from 'url'
 import type { Config } from './config.js'
 import { authenticate, initAuth } from './auth.js'
+import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
 import { audit, log } from './logger.js'
 
@@ -49,12 +50,21 @@ async function handleRequest(
   const method = req.method || 'GET'
   const path = req.url || '/'
 
-  // Authenticate
+  // Authenticate client (proxy-level auth)
   const clientName = authenticate(req)
   if (!clientName) {
     res.writeHead(401, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ error: 'Unauthorized - provide Bearer token in Authorization header' }))
+    res.end(JSON.stringify({ error: 'Unauthorized - provide Bearer token in Authorization or Proxy-Authorization header' }))
     log('warn', `Unauthorized request: ${method} ${path}`)
+    return
+  }
+
+  // Get the real OAuth token (managed by gateway)
+  const oauthToken = getAccessToken()
+  if (!oauthToken) {
+    res.writeHead(503, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ error: 'OAuth token not available - gateway is refreshing' }))
+    log('error', 'No valid OAuth token available')
     return
   }
 
@@ -65,21 +75,23 @@ async function handleRequest(
   }
   let body = Buffer.concat(chunks)
 
-  // Rewrite body if present
+  // Rewrite identity fields in body
   if (body.length > 0) {
     try {
       body = rewriteBody(body, path, config) as Buffer<ArrayBuffer>
     } catch (err) {
       log('error', `Body rewrite failed for ${path}: ${err}`)
-      // Forward unchanged rather than failing
     }
   }
 
-  // Rewrite headers
+  // Rewrite headers (strips client auth, normalizes identity headers)
   const rewrittenHeaders = rewriteHeaders(
     req.headers as Record<string, string | string[] | undefined>,
     config,
   )
+
+  // Inject the real OAuth token (replaces whatever the client sent)
+  rewrittenHeaders['authorization'] = `Bearer ${oauthToken}`
 
   // Forward to upstream
   const upstreamUrl = new URL(path, upstream)
@@ -97,14 +109,12 @@ async function handleRequest(
     (proxyRes) => {
       const status = proxyRes.statusCode || 502
 
-      // Copy response headers
       const responseHeaders = { ...proxyRes.headers }
-      // Remove hop-by-hop
       delete responseHeaders['transfer-encoding']
 
       res.writeHead(status, responseHeaders)
 
-      // Stream response body directly (for SSE streaming responses)
+      // Stream response directly (SSE for Claude responses)
       proxyRes.pipe(res)
 
       if (config.logging.audit) {
