@@ -98,9 +98,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOG-02 | Phase 6 | Complete |
 | LOG-03 | Phase 6 | Complete |
 | LOG-04 | Phase 6 | Complete |
-| DEPLOY-01 | Phase 7 | Pending |
-| DEPLOY-02 | Phase 7 | Pending |
-| DEPLOY-03 | Phase 7 | Pending |
+| DEPLOY-01 | Phase 7 | Complete |
+| DEPLOY-02 | Phase 7 | Complete |
+| DEPLOY-03 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 19 total

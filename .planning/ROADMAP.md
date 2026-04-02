@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Usage Logging** - Per-request logging pipeline writing model, tokens, latency, and client to SQLite
 - [x] **Phase 5: Usage Dashboard** - Per-client rollups, rate limit display, and estimated cost view
 - [x] **Phase 6: Log Viewer** - Filterable, drillable request log UI for troubleshooting
-- [ ] **Phase 7: Deployment** - Single Docker image build, DockerHub publish, and Dokploy docker-compose
+- [x] **Phase 7: Deployment** - Single Docker image build, DockerHub publish, and Dokploy docker-compose
 
 ## Phase Details
 
@@ -112,4 +112,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 4. Usage Logging | 0/TBD | Not started | - |
 | 5. Usage Dashboard | 0/TBD | Not started | - |
 | 6. Log Viewer | 0/TBD | Not started | - |
-| 7. Deployment | 0/TBD | Not started | - |
+| 7. Deployment | 1/1 | Complete | 2026-04-02 |

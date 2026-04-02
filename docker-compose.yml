@@ -5,10 +5,17 @@ services:
       - "8443:8443"
     volumes:
       - ./config.yaml:/app/config.yaml:ro
-      - ./certs:/app/certs:ro
+      - gateway-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - PORTAL_DATA_DIR=/app/data
     restart: unless-stopped
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  gateway-data:

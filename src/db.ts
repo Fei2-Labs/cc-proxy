@@ -61,8 +61,14 @@ export function initDatabase(dbPath: string): Database.Database {
 }
 
 export function getDatabase(): Database.Database {
-  if (!db) throw new Error('Database not initialized — call initDatabase() first')
-  return db
+  if (!db) {
+    const { resolve } = require('path') as typeof import('path')
+    const dbPath = process.env.PORTAL_DATA_DIR
+      ? resolve(process.env.PORTAL_DATA_DIR, 'cc-proxy.db')
+      : resolve(process.cwd(), 'data', 'cc-proxy.db')
+    initDatabase(dbPath)
+  }
+  return db!
 }
 
 export function getSetting(key: string): string | undefined {

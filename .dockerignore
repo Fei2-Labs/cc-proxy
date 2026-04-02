@@ -1,0 +1,15 @@
+node_modules
+dist
+.next
+portal/.next
+.planning
+.playwright-mcp
+.git
+.github
+data
+certs
+*.md
+.env
+config.yaml
+.gitignore
+tests
