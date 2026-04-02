@@ -11,6 +11,7 @@ COPY tsconfig.json server.ts ./
 COPY src/ src/
 COPY portal/ portal/
 COPY config.example.yaml ./
+# cache bust: v2
 
 RUN pnpm run build
 
