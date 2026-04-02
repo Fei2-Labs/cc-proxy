@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
-import { createMagicLink } from '../../../../src/db'
+import { createMagicLink } from '../../../../../../src/db'
 import { isEmailAllowed } from '@/lib/auth'
 import { sendMagicLinkEmail } from '@/lib/email'
 

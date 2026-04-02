@@ -6,3 +6,5 @@ config.yaml
 certs/
 portal/.next/
 data/
+.DS_Store
+.DS_Store

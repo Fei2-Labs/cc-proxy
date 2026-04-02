@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyMagicLink } from '../../../../src/db'
+import { verifyMagicLink } from '../../../../../../src/db'
 import { createSession, getSessionCookieConfig } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
