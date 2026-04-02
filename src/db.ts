@@ -21,6 +21,24 @@ CREATE TABLE IF NOT EXISTS tokens (
   last_used_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS request_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_name TEXT NOT NULL,
+  method TEXT NOT NULL,
+  path TEXT NOT NULL,
+  model TEXT,
+  input_tokens INTEGER,
+  output_tokens INTEGER,
+  cache_read_tokens INTEGER,
+  cache_creation_tokens INTEGER,
+  status INTEGER NOT NULL,
+  latency_ms INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_request_logs_client ON request_logs(client_name);
+CREATE INDEX IF NOT EXISTS idx_request_logs_created ON request_logs(created_at);
 `
 
 export type DbToken = {
@@ -100,4 +118,33 @@ export function importConfigTokens(tokens: Array<{ name: string; token: string }
     }
   }
   return imported
+}
+
+export type RequestLog = {
+  client_name: string
+  method: string
+  path: string
+  model?: string
+  input_tokens?: number
+  output_tokens?: number
+  cache_read_tokens?: number
+  cache_creation_tokens?: number
+  status: number
+  latency_ms: number
+}
+
+export function logRequest(entry: RequestLog): void {
+  try {
+    getDatabase().prepare(
+      `INSERT INTO request_logs (client_name, method, path, model, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, status, latency_ms)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      entry.client_name, entry.method, entry.path,
+      entry.model ?? null, entry.input_tokens ?? null, entry.output_tokens ?? null,
+      entry.cache_read_tokens ?? null, entry.cache_creation_tokens ?? null,
+      entry.status, entry.latency_ms
+    )
+  } catch {
+    // Never let logging failures affect proxy
+  }
 }

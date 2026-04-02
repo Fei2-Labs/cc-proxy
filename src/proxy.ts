@@ -8,6 +8,7 @@ import { authenticate } from './auth.js'
 import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
 import { audit, log } from './logger.js'
+import { logRequest } from './db.js'
 
 export function createProxyHandler(config: Config) {
   const upstream = new URL(config.upstream.url)
@@ -104,6 +105,7 @@ async function handleRequest(
   }
 
   // Collect request body
+  const startTime = Date.now()
   const chunks: Buffer[] = []
   for await (const chunk of req) {
     chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
@@ -149,12 +151,72 @@ async function handleRequest(
 
       res.writeHead(status, responseHeaders)
 
-      // Stream response directly (SSE for Claude responses)
-      proxyRes.pipe(res)
+      const responseChunks: Buffer[] = []
 
-      if (config.logging.audit) {
-        audit(clientName, method, path, status)
-      }
+      proxyRes.on('data', (chunk: Buffer) => {
+        res.write(chunk)
+        responseChunks.push(chunk)
+      })
+
+      proxyRes.on('end', () => {
+        res.end()
+        const latencyMs = Date.now() - startTime
+
+        let model: string | undefined
+        let inputTokens: number | undefined
+        let outputTokens: number | undefined
+        let cacheReadTokens: number | undefined
+        let cacheCreationTokens: number | undefined
+
+        try {
+          const responseText = Buffer.concat(responseChunks).toString('utf-8')
+
+          // Try SSE format (streaming)
+          const lines = responseText.split('\n')
+          for (let i = lines.length - 1; i >= 0; i--) {
+            const line = lines[i]
+            if (line.startsWith('data: ') && line.includes('"usage"')) {
+              const data = JSON.parse(line.slice(6))
+              if (data.usage) {
+                inputTokens = data.usage.input_tokens
+                outputTokens = data.usage.output_tokens
+                cacheReadTokens = data.usage.cache_read_input_tokens
+                cacheCreationTokens = data.usage.cache_creation_input_tokens
+              }
+              if (data.model) model = data.model
+              break
+            }
+            if (line.startsWith('data: ') && line.includes('"model"') && !model) {
+              try { const d = JSON.parse(line.slice(6)); if (d.model) model = d.model } catch {}
+            }
+          }
+
+          // Try JSON format (non-streaming)
+          if (!inputTokens) {
+            try {
+              const json = JSON.parse(responseText)
+              if (json.usage) {
+                inputTokens = json.usage.input_tokens
+                outputTokens = json.usage.output_tokens
+                cacheReadTokens = json.usage.cache_read_input_tokens
+                cacheCreationTokens = json.usage.cache_creation_input_tokens
+              }
+              if (json.model) model = json.model
+            } catch {}
+          }
+        } catch {}
+
+        logRequest({
+          client_name: clientName, method, path, model,
+          input_tokens: inputTokens, output_tokens: outputTokens,
+          cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens,
+          status, latency_ms: latencyMs,
+        })
+
+        if (config.logging.audit) {
+          audit(clientName, method, path, status)
+        }
+      })
     },
   )
 
@@ -164,6 +226,10 @@ async function handleRequest(
       res.writeHead(502, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ error: 'Bad gateway', detail: err.message }))
     }
+    logRequest({
+      client_name: clientName, method, path,
+      status: 502, latency_ms: Date.now() - startTime,
+    })
     if (config.logging.audit) {
       audit(clientName, method, path, 502)
     }
