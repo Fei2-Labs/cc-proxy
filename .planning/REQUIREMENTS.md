@@ -87,9 +87,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TKN-01 | Phase 2 | Complete |
 | TKN-02 | Phase 2 | Complete |
 | TKN-03 | Phase 2 | Complete |
-| OAUTH-01 | Phase 3 | Pending |
-| OAUTH-02 | Phase 3 | Pending |
-| OAUTH-03 | Phase 3 | Pending |
+| OAUTH-01 | Phase 3 | Complete |
+| OAUTH-02 | Phase 3 | Complete |
+| OAUTH-03 | Phase 3 | Complete |
 | USAGE-01 | Phase 4 | Pending |
 | USAGE-02 | Phase 5 | Pending |
 | USAGE-03 | Phase 5 | Pending |
