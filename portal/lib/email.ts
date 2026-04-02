@@ -1,20 +1,22 @@
 import nodemailer from 'nodemailer'
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'localhost',
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === 'true',
-  ...(process.env.SMTP_USER && {
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  }),
-})
+function getTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === 'true',
+    ...(process.env.SMTP_USER && {
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    }),
+  })
+}
 
 export async function sendMagicLinkEmail(email: string, url: string): Promise<void> {
   if (!process.env.SMTP_HOST) {
     console.log(`\n🔗 Magic link for ${email}:\n${url}\n`)
     return
   }
-  await transporter.sendMail({
+  await getTransporter().sendMail({
     from: process.env.SMTP_FROM || 'CC Proxy <noreply@localhost>',
     to: email,
     subject: 'Sign in to CC Proxy',
