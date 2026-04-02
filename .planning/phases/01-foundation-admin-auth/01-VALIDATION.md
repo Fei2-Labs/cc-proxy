@@ -17,20 +17,20 @@ created: 2026-04-02
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Node.js built-in assert + tsx (existing pattern) |
-| **Config file** | none — uses existing test pattern |
-| **Quick run command** | `tsx tests/auth.test.ts` |
-| **Full suite command** | `npm test` |
-| **Estimated runtime** | ~3 seconds |
+| **Framework** | vitest (ESM-native, pairs with existing tsx setup) |
+| **Config file** | vitest.config.ts (Wave 0 installs) |
+| **Quick run command** | `npx vitest run --reporter=verbose` |
+| **Full suite command** | `npx vitest run` |
+| **Estimated runtime** | ~5 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `tsx tests/auth.test.ts`
-- **After every plan wave:** Run `npm test`
+- **After every task commit:** Run `npx vitest run`
+- **After every plan wave:** Run `npx vitest run`
 - **Before `/gsd:verify-work`:** Full suite must be green
-- **Max feedback latency:** 3 seconds
+- **Max feedback latency:** 5 seconds
 
 ---
 
@@ -38,10 +38,9 @@ created: 2026-04-02
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 1-01-01 | 01 | 1 | AUTH-01 | integration | `curl -X POST localhost:8443/api/auth/login` | ❌ W0 | ⬜ pending |
-| 1-01-02 | 01 | 1 | AUTH-02 | integration | `curl -b cookies.txt localhost:8443/portal` | ❌ W0 | ⬜ pending |
-| 1-02-01 | 02 | 1 | AUTH-01 | manual | Browser login flow | N/A | ⬜ pending |
-| 1-02-02 | 02 | 1 | AUTH-02 | manual | Browser refresh test | N/A | ⬜ pending |
+| 01-01-01 | 01 | 0 | - | setup | `npx vitest --version` | ❌ W0 | ⬜ pending |
+| 01-02-01 | 02 | 1 | AUTH-01 | integration | `npx vitest run tests/auth.test.ts` | ❌ W0 | ⬜ pending |
+| 01-02-02 | 02 | 1 | AUTH-02 | integration | `npx vitest run tests/session.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,10 +48,10 @@ created: 2026-04-02
 
 ## Wave 0 Requirements
 
-- [ ] `tests/auth.test.ts` — stubs for AUTH-01, AUTH-02 (JWT sign/verify, password check)
-- [ ] Test fixtures for mock database and config
-
-*If none: "Existing infrastructure covers all phase requirements."*
+- [ ] `vitest` + `@testing-library/react` — install test framework
+- [ ] `vitest.config.ts` — configure for ESM + TypeScript
+- [ ] `tests/auth.test.ts` — stubs for AUTH-01 (login flow)
+- [ ] `tests/session.test.ts` — stubs for AUTH-02 (session persistence)
 
 ---
 
@@ -60,10 +59,8 @@ created: 2026-04-02
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Login page renders | AUTH-01 | UI rendering requires browser | Navigate to /login, verify form appears |
-| Session persists on refresh | AUTH-02 | Browser cookie behavior | Login, refresh page, verify still authenticated |
-| Sidebar navigation | AUTH-01 | Visual layout verification | Login, verify sidebar shows 5 nav items |
-| Redirect to login | AUTH-01 | Browser redirect behavior | Clear cookies, navigate to /portal, verify redirect |
+| Login page renders correctly | AUTH-01 | Visual verification | Navigate to /portal, verify login form appears |
+| Session persists on refresh | AUTH-02 | Browser behavior | Log in, refresh page, verify still logged in |
 
 ---
 
@@ -73,7 +70,7 @@ created: 2026-04-02
 - [ ] Sampling continuity: no 3 consecutive tasks without automated verify
 - [ ] Wave 0 covers all MISSING references
 - [ ] No watch-mode flags
-- [ ] Feedback latency < 3s
+- [ ] Feedback latency < 5s
 - [ ] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
