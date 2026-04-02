@@ -8,7 +8,7 @@ import { authenticate } from './auth.js'
 import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
 import { audit, log } from './logger.js'
-import { logRequest } from './db.js'
+import { logRequest, setSetting } from './db.js'
 
 export function createProxyHandler(config: Config) {
   const upstream = new URL(config.upstream.url)
@@ -212,6 +212,13 @@ async function handleRequest(
           cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens,
           status, latency_ms: latencyMs,
         })
+
+        // Capture rate limit headers
+        const rlHeaders = ['x-ratelimit-limit-requests', 'x-ratelimit-limit-tokens', 'x-ratelimit-remaining-requests', 'x-ratelimit-remaining-tokens', 'x-ratelimit-reset-requests', 'x-ratelimit-reset-tokens']
+        for (const h of rlHeaders) {
+          const val = proxyRes.headers[h]
+          if (val) try { setSetting(`ratelimit_${h}`, String(val)) } catch {}
+        }
 
         if (config.logging.audit) {
           audit(clientName, method, path, status)
