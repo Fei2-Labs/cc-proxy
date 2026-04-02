@@ -82,31 +82,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TKN-01 | -- | Pending |
-| TKN-02 | -- | Pending |
-| TKN-03 | -- | Pending |
-| OAUTH-01 | -- | Pending |
-| OAUTH-02 | -- | Pending |
-| OAUTH-03 | -- | Pending |
-| USAGE-01 | -- | Pending |
-| USAGE-02 | -- | Pending |
-| USAGE-03 | -- | Pending |
-| USAGE-04 | -- | Pending |
-| LOG-01 | -- | Pending |
-| LOG-02 | -- | Pending |
-| LOG-03 | -- | Pending |
-| LOG-04 | -- | Pending |
-| AUTH-01 | -- | Pending |
-| AUTH-02 | -- | Pending |
-| DEPLOY-01 | -- | Pending |
-| DEPLOY-02 | -- | Pending |
-| DEPLOY-03 | -- | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| TKN-01 | Phase 2 | Pending |
+| TKN-02 | Phase 2 | Pending |
+| TKN-03 | Phase 2 | Pending |
+| OAUTH-01 | Phase 3 | Pending |
+| OAUTH-02 | Phase 3 | Pending |
+| OAUTH-03 | Phase 3 | Pending |
+| USAGE-01 | Phase 4 | Pending |
+| USAGE-02 | Phase 5 | Pending |
+| USAGE-03 | Phase 5 | Pending |
+| USAGE-04 | Phase 5 | Pending |
+| LOG-01 | Phase 6 | Pending |
+| LOG-02 | Phase 6 | Pending |
+| LOG-03 | Phase 6 | Pending |
+| LOG-04 | Phase 6 | Pending |
+| DEPLOY-01 | Phase 7 | Pending |
+| DEPLOY-02 | Phase 7 | Pending |
+| DEPLOY-03 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after initial definition*
+*Last updated: 2026-04-02 after roadmap creation*
