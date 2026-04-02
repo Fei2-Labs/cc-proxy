@@ -4,7 +4,7 @@ import { loadConfig } from './src/config.js'
 import { setLogLevel, log } from './src/logger.js'
 import { initOAuth } from './src/oauth.js'
 import { createProxyHandler } from './src/proxy.js'
-import { initDatabase } from './src/db.js'
+import { initDatabase, importConfigTokens } from './src/db.js'
 import { resolve } from 'path'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -21,6 +21,14 @@ async function main() {
     : resolve(process.cwd(), 'data', 'cc-proxy.db')
   initDatabase(dbPath)
   log('info', `Database initialized: ${dbPath}`)
+
+  // Import config.yaml tokens into SQLite on first run
+  if (config.auth.tokens.length > 0) {
+    const imported = importConfigTokens(config.auth.tokens)
+    if (imported > 0) {
+      log('info', `Imported ${imported} token(s) from config.yaml`)
+    }
+  }
 
   // Initialize OAuth
   await initOAuth(config.oauth.refresh_token)
@@ -39,7 +47,7 @@ async function main() {
     const url = req.url || '/'
 
     // Portal routes → Next.js
-    if (url.startsWith('/portal') || url.startsWith('/login') || url.startsWith('/api/auth') || url.startsWith('/_next') || url.startsWith('/favicon')) {
+    if (url.startsWith('/portal') || url.startsWith('/login') || url.startsWith('/api/auth') || url.startsWith('/api/tokens') || url.startsWith('/_next') || url.startsWith('/favicon')) {
       nextHandler(req, res)
       return
     }

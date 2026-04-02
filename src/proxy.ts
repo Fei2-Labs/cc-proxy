@@ -4,13 +4,12 @@ import { readFileSync } from 'fs'
 import { request as httpsRequest } from 'https'
 import { URL } from 'url'
 import type { Config } from './config.js'
-import { authenticate, initAuth } from './auth.js'
+import { authenticate } from './auth.js'
 import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
 import { audit, log } from './logger.js'
 
 export function createProxyHandler(config: Config) {
-  initAuth(config)
   const upstream = new URL(config.upstream.url)
   return (req: IncomingMessage, res: ServerResponse) => {
     handleRequest(req, res, config, upstream)
@@ -18,8 +17,6 @@ export function createProxyHandler(config: Config) {
 }
 
 export function startProxy(config: Config) {
-  initAuth(config)
-
   const upstream = new URL(config.upstream.url)
   const useTls = config.server.tls?.cert && config.server.tls?.key
 
