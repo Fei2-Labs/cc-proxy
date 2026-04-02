@@ -91,9 +91,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OAUTH-02 | Phase 3 | Complete |
 | OAUTH-03 | Phase 3 | Complete |
 | USAGE-01 | Phase 4 | Complete |
-| USAGE-02 | Phase 5 | Pending |
-| USAGE-03 | Phase 5 | Pending |
-| USAGE-04 | Phase 5 | Pending |
+| USAGE-02 | Phase 5 | Complete |
+| USAGE-03 | Phase 5 | Complete |
+| USAGE-04 | Phase 5 | Complete |
 | LOG-01 | Phase 6 | Pending |
 | LOG-02 | Phase 6 | Pending |
 | LOG-03 | Phase 6 | Pending |
