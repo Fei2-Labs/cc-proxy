@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { getSetting, setSetting } from '../../src/db'
-import { randomBytes, timingSafeEqual } from 'crypto'
+import { randomBytes } from 'crypto'
 
 const COOKIE_NAME = 'cc-session'
 const JWT_EXPIRY = '7d'
@@ -15,33 +15,31 @@ function getSigningKey(): Uint8Array {
   return new TextEncoder().encode(keyHex)
 }
 
-export async function createSession(): Promise<string> {
-  const key = getSigningKey()
-  const token = await new SignJWT({ role: 'admin' })
+export function getAllowedEmails(): string[] {
+  const raw = process.env.ALLOWED_EMAILS || ''
+  return raw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+}
+
+export function isEmailAllowed(email: string): boolean {
+  const allowed = getAllowedEmails()
+  return allowed.length === 0 || allowed.includes(email.toLowerCase())
+}
+
+export async function createSession(email: string): Promise<string> {
+  return new SignJWT({ role: 'admin', email })
     .setProtectedHeader({ alg: ALGORITHM })
     .setIssuedAt()
     .setExpirationTime(JWT_EXPIRY)
-    .sign(key)
-  return token
+    .sign(getSigningKey())
 }
 
-export async function verifySession(token: string): Promise<boolean> {
+export async function verifySession(token: string): Promise<{ valid: boolean; email?: string }> {
   try {
-    const key = getSigningKey()
-    await jwtVerify(token, key, { algorithms: [ALGORITHM] })
-    return true
+    const { payload } = await jwtVerify(token, getSigningKey(), { algorithms: [ALGORITHM] })
+    return { valid: true, email: payload.email as string }
   } catch {
-    return false
+    return { valid: false }
   }
-}
-
-export function verifyPassword(input: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD
-  if (!expected) return false
-  if (input.length !== expected.length) return false
-  const a = Buffer.from(input)
-  const b = Buffer.from(expected)
-  return timingSafeEqual(a, b)
 }
 
 export function getSessionCookieConfig(token: string) {

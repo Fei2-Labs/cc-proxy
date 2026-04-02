@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ authenticated: false }, { status: 401 })
   }
 
-  const valid = await verifySession(token)
+  const { valid, email } = await verifySession(token)
   if (!valid) {
     return NextResponse.json({ authenticated: false }, { status: 401 })
   }
 
-  return NextResponse.json({ authenticated: true, role: 'admin' })
+  return NextResponse.json({ authenticated: true, role: 'admin', email })
 }

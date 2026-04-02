@@ -39,6 +39,15 @@ CREATE TABLE IF NOT EXISTS request_logs (
 
 CREATE INDEX IF NOT EXISTS idx_request_logs_client ON request_logs(client_name);
 CREATE INDEX IF NOT EXISTS idx_request_logs_created ON request_logs(created_at);
+
+CREATE TABLE IF NOT EXISTS magic_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  used INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `
 
 export type DbToken = {
@@ -242,4 +251,25 @@ export function queryLogs(filter: LogFilter): { logs: LogEntry[]; total: number 
 
 export function getDistinctClients(): string[] {
   return (getDatabase().prepare('SELECT DISTINCT client_name FROM request_logs ORDER BY client_name').all() as { client_name: string }[]).map(r => r.client_name)
+}
+
+export function createMagicLink(email: string, token: string, ttlMinutes = 15): void {
+  const token_hash = hashToken(token)
+  // Clean up expired/used links for this email
+  getDatabase().prepare("DELETE FROM magic_links WHERE email = ? OR expires_at < datetime('now')").run(email)
+  getDatabase().prepare(
+    `INSERT INTO magic_links (email, token_hash, expires_at) VALUES (?, ?, datetime('now', '+' || ? || ' minutes'))`
+  ).run(email, token_hash, ttlMinutes)
+}
+
+export function verifyMagicLink(token: string): string | null {
+  const token_hash = hashToken(token)
+  const row = getDatabase().prepare(
+    "SELECT email FROM magic_links WHERE token_hash = ? AND used = 0 AND expires_at > datetime('now')"
+  ).get(token_hash) as { email: string } | undefined
+  if (row) {
+    getDatabase().prepare("UPDATE magic_links SET used = 1 WHERE token_hash = ?").run(token_hash)
+    return row.email
+  }
+  return null
 }
