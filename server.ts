@@ -1,3 +1,13 @@
+import { readFileSync } from 'fs'
+
+// Load .env
+try {
+  for (const line of readFileSync('.env', 'utf-8').split('\n')) {
+    const m = line.match(/^([^#=]+)=(.*)$/)
+    if (m && !process.env[m[1].trim()]) process.env[m[1].trim()] = m[2].trim()
+  }
+} catch {}
+
 import { createServer } from 'http'
 import next from 'next'
 import { loadConfig } from './src/config.js'
