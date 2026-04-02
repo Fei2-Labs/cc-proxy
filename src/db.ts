@@ -175,3 +175,65 @@ export function getUsageByClient(period: 'day' | 'week' | 'month'): UsageRollup[
     ORDER BY input_tokens DESC
   `).all(since) as UsageRollup[]
 }
+
+export type LogEntry = {
+  id: number
+  client_name: string
+  method: string
+  path: string
+  model: string | null
+  input_tokens: number | null
+  output_tokens: number | null
+  cache_read_tokens: number | null
+  cache_creation_tokens: number | null
+  status: number
+  latency_ms: number
+  created_at: string
+}
+
+export type LogFilter = {
+  client?: string
+  status?: 'success' | 'error' | 'rate_limited'
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export function queryLogs(filter: LogFilter): { logs: LogEntry[]; total: number } {
+  const conditions: string[] = []
+  const params: (string | number)[] = []
+
+  if (filter.client) {
+    conditions.push('client_name = ?')
+    params.push(filter.client)
+  }
+  if (filter.status === 'success') {
+    conditions.push('status >= 200 AND status < 300')
+  } else if (filter.status === 'error') {
+    conditions.push('status >= 400 AND status != 429')
+  } else if (filter.status === 'rate_limited') {
+    conditions.push('status = 429')
+  }
+  if (filter.from) {
+    conditions.push('created_at >= ?')
+    params.push(filter.from)
+  }
+  if (filter.to) {
+    conditions.push('created_at <= ?')
+    params.push(filter.to)
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
+  const limit = filter.limit || 50
+  const offset = filter.offset || 0
+
+  const total = (getDatabase().prepare(`SELECT COUNT(*) as count FROM request_logs ${where}`).get(...params) as { count: number }).count
+  const logs = getDatabase().prepare(`SELECT * FROM request_logs ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`).all(...params, limit, offset) as LogEntry[]
+
+  return { logs, total }
+}
+
+export function getDistinctClients(): string[] {
+  return (getDatabase().prepare('SELECT DISTINCT client_name FROM request_logs ORDER BY client_name').all() as { client_name: string }[]).map(r => r.client_name)
+}
