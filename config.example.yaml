@@ -34,7 +34,7 @@ auth:
 # Canonical identity - all clients will appear as this single device
 # Generate a fresh identity: npm run generate-identity
 identity:
-  device_id: "0000000000000000000000000000000000000000000000000000000000000000"
+  device_id: "fd8c1e38ec38461d6a5e5457270bef700da3b557caaae7471c42202575967b44"
   email: "user@example.com"
 
 # Canonical environment fingerprint
