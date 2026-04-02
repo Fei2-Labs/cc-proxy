@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
     await sendMagicLinkEmail(normalized, url)
 
     return NextResponse.json({ ok: true })
-  } catch {
+  } catch (err) {
+    console.error('Magic link send error:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
