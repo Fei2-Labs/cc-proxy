@@ -59,8 +59,8 @@ export function loadConfig(configPath?: string): Config {
   if (!config.auth?.tokens) {
     config.auth = { ...config.auth, tokens: [] }
   }
-  if (!config.oauth?.refresh_token) {
-    throw new Error('config: oauth.refresh_token is required. Do a browser OAuth login on the admin machine, then copy the refresh token from ~/.claude/.credentials.json')
+  if (!config.oauth) {
+    config.oauth = { refresh_token: '' }
   }
 
   return config

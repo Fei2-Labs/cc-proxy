@@ -2,9 +2,9 @@ import { createServer } from 'http'
 import next from 'next'
 import { loadConfig } from './src/config.js'
 import { setLogLevel, log } from './src/logger.js'
-import { initOAuth } from './src/oauth.js'
+import { initOAuth, reinitOAuth } from './src/oauth.js'
 import { createProxyHandler } from './src/proxy.js'
-import { initDatabase, importConfigTokens } from './src/db.js'
+import { initDatabase, importConfigTokens, getSetting } from './src/db.js'
 import { resolve } from 'path'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -30,8 +30,19 @@ async function main() {
     }
   }
 
-  // Initialize OAuth
-  await initOAuth(config.oauth.refresh_token)
+  // Initialize OAuth (SQLite first, config.yaml fallback)
+  const storedRefreshToken = getSetting('oauth_refresh_token')
+  const refreshToken = storedRefreshToken || config.oauth?.refresh_token
+
+  if (refreshToken) {
+    try {
+      await initOAuth(refreshToken)
+    } catch (err) {
+      log('warn', `OAuth init failed: ${err instanceof Error ? err.message : err}. Configure via portal.`)
+    }
+  } else {
+    log('info', 'No OAuth token configured. Use the portal to connect.')
+  }
 
   // Create proxy handler
   const proxyHandler = createProxyHandler(config)
@@ -46,8 +57,26 @@ async function main() {
   const server = createServer((req, res) => {
     const url = req.url || '/'
 
+    // Internal: reinitialize OAuth with stored token
+    if (url === '/_reinit-oauth' && req.method === 'POST') {
+      const token = getSetting('oauth_refresh_token')
+      if (token) {
+        reinitOAuth(token).then(() => {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: true }))
+        }).catch((err) => {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: String(err) }))
+        })
+        return
+      }
+      res.writeHead(400, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'No stored token' }))
+      return
+    }
+
     // Portal routes → Next.js
-    if (url.startsWith('/portal') || url.startsWith('/login') || url.startsWith('/api/auth') || url.startsWith('/api/tokens') || url.startsWith('/_next') || url.startsWith('/favicon')) {
+    if (url.startsWith('/portal') || url.startsWith('/login') || url.startsWith('/api/auth') || url.startsWith('/api/tokens') || url.startsWith('/api/oauth') || url.startsWith('/_next') || url.startsWith('/favicon')) {
       nextHandler(req, res)
       return
     }
