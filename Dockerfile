@@ -22,6 +22,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/portal/.next ./portal/.next
 COPY --from=builder /app/portal/next.config.mjs ./portal/next.config.mjs
 COPY --from=builder /app/portal/postcss.config.mjs ./portal/postcss.config.mjs
+COPY --from=builder /app/portal/tsconfig.json ./portal/tsconfig.json
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/config.example.yaml ./config.yaml
 
@@ -31,4 +32,4 @@ ENV NODE_ENV=production
 ENV PORTAL_DATA_DIR=/app/data
 
 EXPOSE 8443
-CMD ["node", "dist/server.js"]
+CMD ["node", "--trace-warnings", "dist/server.js"]
