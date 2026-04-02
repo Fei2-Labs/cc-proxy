@@ -13,4 +13,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY package.json ./
 
 EXPOSE 8443
-CMD ["node", "dist/index.js", "/app/config.yaml"]
+CMD ["node", "dist/index.js"]
