@@ -1,0 +1,455 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - link "Feishu Docs" [ref=e10] [cursor=pointer]:
+            - /url: https://www.feishu.cn
+            - img [ref=e13]
+            - generic [ref=e17]: Feishu Docs
+          - img [ref=e21] [cursor=pointer]
+        - generic [ref=e24]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e29]:
+                - generic [ref=e30]: ByteDance
+                - img [ref=e31]
+              - paragraph [ref=e33]:
+                - generic [ref=e34]: Claude Code 封号机制深度探查报告
+            - paragraph [ref=e37]: "Last updated: Mar 31"
+          - generic [ref=e41]:
+            - button "Log In or Sign Up" [ref=e43] [cursor=pointer]
+            - button [ref=e44] [cursor=pointer]:
+              - img [ref=e46]
+      - generic [ref=e51]:
+        - list [ref=e59] [cursor=pointer]:
+          - listitem
+          - listitem [ref=e60]:
+            - link "Claude Code 封号机制深度探查报告" [ref=e61]:
+              - /url: "#QNsIdi8VFoKm00xY8SRlkXxygve"
+              - img [ref=e63]
+              - text: Claude Code 封号机制深度探查报告
+          - listitem [ref=e65]:
+            - link "Claude Code 封号机制深度探查报告" [ref=e66]:
+              - /url: "#doxlghDtY98hJQJf0gvGCBWwAmh"
+              - img [ref=e68]
+              - text: Claude Code 封号机制深度探查报告
+          - listitem [ref=e70]:
+            - link "一、核心结论" [ref=e71]:
+              - /url: "#doxlg8p7eeaL1zSAwFCWpawiggb"
+              - img [ref=e73]
+              - text: 一、核心结论
+          - listitem [ref=e75]:
+            - link "封号最可能的 5 大原因" [ref=e76]:
+              - /url: "#doxlg0HxRhlCOSKJroMdVkpOJQb"
+              - img [ref=e78]
+              - text: 封号最可能的 5 大原因
+          - listitem [ref=e80]:
+            - link "二、身份追踪体系" [ref=e81]:
+              - /url: "#doxlgSBRuEHM4G1DTviNqkgjmgf"
+              - img [ref=e83]
+              - text: 二、身份追踪体系
+          - listitem [ref=e85]:
+            - link "2.1 持久化标识符" [ref=e86]:
+              - /url: "#doxlgyKr5fHxhUwXAKrp7hjmvCv"
+              - img [ref=e88]
+              - text: 2.1 持久化标识符
+          - listitem [ref=e90]:
+            - link "2.2 消息内容指纹（Fingerprint）" [ref=e91]:
+              - /url: "#doxlgwf17J5NhXzEgwfMt29fQHb"
+              - img [ref=e93]
+              - text: 2.2 消息内容指纹（Fingerprint）
+          - listitem [ref=e95]:
+            - link "2.3 每次 API 请求携带的身份信息" [ref=e96]:
+              - /url: "#doxlgaHL5Mfrfgg81WByWKoU1oe"
+              - img [ref=e98]
+              - text: 2.3 每次 API 请求携带的身份信息
+          - listitem [ref=e100]:
+            - link "三、环境指纹采集（40+ 维度）" [ref=e101]:
+              - /url: "#doxlg1BB4ESiwbaTUszSWv2yMeb"
+              - img [ref=e103]
+              - text: 三、环境指纹采集（40+ 维度）
+          - listitem [ref=e105]:
+            - link "3.1 系统级信息" [ref=e106]:
+              - /url: "#doxlgzSJ3EJeg7QfQoMxJweCZzb"
+              - img [ref=e108]
+              - text: 3.1 系统级信息
+          - listitem [ref=e110]:
+            - link "3.2 运行环境检测（40+ 种）" [ref=e111]:
+              - /url: "#doxlgMQyvuDamckFw6W75tIkv9e"
+              - img [ref=e113]
+              - text: 3.2 运行环境检测（40+ 种）
+          - listitem [ref=e115]:
+            - link "3.3 开发工具链" [ref=e116]:
+              - /url: "#doxlgzGqnqEoV7E3Laqqd1z0Paf"
+              - img [ref=e118]
+              - text: 3.3 开发工具链
+          - listitem [ref=e120]:
+            - link "3.4 GitHub Actions 专项采集" [ref=e121]:
+              - /url: "#doxlgyeF2vxjeWmtKOba9nxExxc"
+              - img [ref=e123]
+              - text: 3.4 GitHub Actions 专项采集
+          - listitem [ref=e125]:
+            - link "四、遥测上报系统" [ref=e126]:
+              - /url: "#doxlguQZp4ugUNJAyKM2FI5KkLe"
+              - img [ref=e128]
+              - text: 四、遥测上报系统
+          - listitem [ref=e130]:
+            - link "4.1 三路并发上报架构" [ref=e131]:
+              - /url: "#doxlgEj0Iu6yGnWHyfUd0Pocr5L"
+              - img [ref=e133]
+              - text: 4.1 三路并发上报架构
+          - listitem [ref=e135]:
+            - link "4.2 第一方事件日志（最核心）" [ref=e136]:
+              - /url: "#doxlgqOVyt8wvNb9B977k31MzGe"
+              - img [ref=e138]
+              - text: 4.2 第一方事件日志（最核心）
+          - listitem [ref=e140]:
+            - link "4.3 每个事件附带的元数据" [ref=e141]:
+              - /url: "#doxlg6MzcuAhNPW1Wqc0wkJb6re"
+              - img [ref=e143]
+              - text: 4.3 每个事件附带的元数据
+          - listitem [ref=e145]:
+            - link "4.4 Datadog 上报" [ref=e146]:
+              - /url: "#doxlgMc7r4wZJcgRA7f6KMIsyfe"
+              - img [ref=e148]
+              - text: 4.4 Datadog 上报
+          - listitem [ref=e150]:
+            - link "4.5 GrowthBook 双向数据交换" [ref=e151]:
+              - /url: "#doxlgVJ7oReLrADSRK5WzsQcG4g"
+              - img [ref=e153]
+              - text: 4.5 GrowthBook 双向数据交换
+          - listitem [ref=e155]:
+            - link "五、服务端远程控制机制" [ref=e156]:
+              - /url: "#doxlg4yfpDtDMiqDmtoucuseAUd"
+              - img [ref=e158]
+              - text: 五、服务端远程控制机制
+          - listitem [ref=e160]:
+            - link "5.1 Policy Limits（组织级策略限制）" [ref=e161]:
+              - /url: "#doxlgJh6E17pOK92luMoqIAHnHh"
+              - img [ref=e163]
+              - text: 5.1 Policy Limits（组织级策略限制）
+          - listitem [ref=e165]:
+            - link "5.2 Remote Managed Settings（远程设置推送）" [ref=e166]:
+              - /url: "#doxlgf6UVhS4JY46NbS6X3fzMLU"
+              - img [ref=e168]
+              - text: 5.2 Remote Managed Settings（远程设置推送）
+          - listitem [ref=e170]:
+            - link "5.3 版本强制升级" [ref=e171]:
+              - /url: "#doxlgrMMmBf83wTYUgXkgEXxhCp"
+              - img [ref=e173]
+              - text: 5.3 版本强制升级
+          - listitem [ref=e175]:
+            - link "5.4 功能标志灰度控制" [ref=e176]:
+              - /url: "#doxlgUVGgVt2nyjPpNCCKem0Kmf"
+              - img [ref=e178]
+              - text: 5.4 功能标志灰度控制
+          - listitem [ref=e180]:
+            - link "六、封号触发机制深度分析" [ref=e181]:
+              - /url: "#doxlgOkisYU0I1B2a0umVWxPwPg"
+              - img [ref=e183]
+              - text: 六、封号触发机制深度分析
+          - listitem [ref=e185]:
+            - link "6.1 身份关联检测（账号共享）" [ref=e186]:
+              - /url: "#doxlgZKHOe1fGhQ5w6HAyxQuOrd"
+              - img [ref=e188]
+              - text: 6.1 身份关联检测（账号共享）
+          - listitem [ref=e190]:
+            - link "6.2 速率限制违规" [ref=e191]:
+              - /url: "#doxlgLtGj6mJ52NnVjjGyW3OtWe"
+              - img [ref=e193]
+              - text: 6.2 速率限制违规
+          - listitem [ref=e195]:
+            - link "6.3 内容策略违规" [ref=e196]:
+              - /url: "#doxlgDwFGAWsRw6LUoVch0LcmWf"
+              - img [ref=e198]
+              - text: 6.3 内容策略违规
+          - listitem [ref=e200]:
+            - link "6.4 自动化滥用检测" [ref=e201]:
+              - /url: "#doxlgXFcXNeVy0PGoQWqfP9s6SG"
+              - img [ref=e203]
+              - text: 6.4 自动化滥用检测
+          - listitem [ref=e205]:
+            - link "6.5 客户端篡改检测" [ref=e206]:
+              - /url: "#doxlgnn6CRCi0apt7vBpbpACfbe"
+              - img [ref=e208]
+              - text: 6.5 客户端篡改检测
+          - listitem [ref=e210]:
+            - link "七、完整数据流向全景图" [ref=e211]:
+              - /url: "#doxlgzNXBHVGahYTnHxEEc828Je"
+              - img [ref=e213]
+              - text: 七、完整数据流向全景图
+          - listitem [ref=e215]:
+            - link "八、所有外部通信端点汇总" [ref=e216]:
+              - /url: "#doxlg9twwVXRXINLUze6jiK86hb"
+              - img [ref=e218]
+              - text: 八、所有外部通信端点汇总
+          - listitem [ref=e220]:
+            - link "九、自我保护建议" [ref=e221]:
+              - /url: "#doxlgdNanHUtXCTXnX36g1xjQvb"
+              - img [ref=e223]
+              - text: 九、自我保护建议
+          - listitem [ref=e225]:
+            - link "9.1 环境变量防护" [ref=e226]:
+              - /url: "#doxlgDUVp91JiIEF4HT4E7FjTqO"
+              - img [ref=e228]
+              - text: 9.1 环境变量防护
+          - listitem [ref=e230]:
+            - link "9.2 使用注意事项" [ref=e231]:
+              - /url: "#doxlg5KZxGbTusHrjDkoszHtrTg"
+              - img [ref=e233]
+              - text: 9.2 使用注意事项
+          - listitem [ref=e235]:
+            - link "9.3 关键文件清理" [ref=e236]:
+              - /url: "#doxlgJ17pofVKPCtGK9lMmhLUff"
+              - img [ref=e238]
+              - text: 9.3 关键文件清理
+          - listitem [ref=e240]:
+            - link "十、总结" [ref=e241]:
+              - /url: "#doxlg5mFHtpULvw8jPvCLp9hhTb"
+              - img [ref=e243]
+              - text: 十、总结
+          - listitem
+        - generic [ref=e247]:
+          - generic [ref=e256]:
+            - generic [ref=e257]:
+              - heading "Claude Code 封号机制深度探查报告" [level=1] [ref=e259]:
+                - generic [ref=e261]: Claude Code 封号机制深度探查报告
+              - generic [ref=e266]: Modified March 31
+            - generic [ref=e269]:
+              - generic [ref=e278]:
+                - text: "From:"
+                - link "https://github.com/instructkr/claude-code" [ref=e281] [cursor=pointer]:
+                  - /url: https://github.com/instructkr/claude-code
+              - generic [ref=e287]: Claude Code 封号机制深度探查报告
+              - generic [ref=e296]: 基于 Claude Code 已泄露源代码分析，全面揭示其数据采集、上报机制及封号触发点
+              - generic [ref=e302]: 一、核心结论
+              - generic [ref=e307]:
+                - generic [ref=e311]: 🎁
+                - generic [ref=e318]: Claude Code 构建了一套企业级用户追踪和行为分析系统，通过 Device ID（永久标识）+ 环境指纹（40+ 维度）+ 行为遥测（640+ 事件类型）形成完整的用户画像。封号并非单一触发，而是多维度综合判定。
+              - generic [ref=e324]: 封号最可能的 5 大原因
+              - generic [ref=e331]:
+                - table [ref=e332]:
+                  - row "排名 原因 风险等级 说明" [ref=e333]:
+                    - cell "排名" [ref=e334]:
+                      - generic [ref=e340]: 排名
+                    - cell "原因" [ref=e341]:
+                      - generic [ref=e347]: 原因
+                    - cell "风险等级" [ref=e348]:
+                      - generic [ref=e354]: 风险等级
+                    - cell "说明" [ref=e355]:
+                      - generic [ref=e361]: 说明
+                - table [ref=e365]:
+                  - rowgroup [ref=e371]:
+                    - row "1 订阅滥用/共享账号 极高 Device ID 跨设备关联，检测多设备共享同一账号" [ref=e372]:
+                      - cell "1" [ref=e373]:
+                        - generic [ref=e379]: "1"
+                      - cell "订阅滥用/共享账号" [ref=e380]:
+                        - generic [ref=e386]: 订阅滥用/共享账号
+                      - cell "极高" [ref=e387]:
+                        - generic [ref=e393]: 极高
+                      - cell "Device ID 跨设备关联，检测多设备共享同一账号" [ref=e394]:
+                        - generic [ref=e400]: Device ID 跨设备关联，检测多设备共享同一账号
+                    - row "2 速率限制违规 高 超出 rateLimitTier 配额，短时间高频调用" [ref=e401]:
+                      - cell "2" [ref=e402]:
+                        - generic [ref=e408]: "2"
+                      - cell "速率限制违规" [ref=e409]:
+                        - generic [ref=e415]: 速率限制违规
+                      - cell "高" [ref=e416]:
+                        - generic [ref=e422]: 高
+                      - cell "超出 rateLimitTier 配额，短时间高频调用" [ref=e423]:
+                        - generic [ref=e429]: 超出 rateLimitTier 配额，短时间高频调用
+                    - row "3 内容策略违规 高 消息内容指纹 + anti-distillation 检测" [ref=e430]:
+                      - cell "3" [ref=e431]:
+                        - generic [ref=e437]: "3"
+                      - cell "内容策略违规" [ref=e438]:
+                        - generic [ref=e444]: 内容策略违规
+                      - cell "高" [ref=e445]:
+                        - generic [ref=e451]: 高
+                      - cell "消息内容指纹 + anti-distillation 检测" [ref=e452]:
+                        - generic [ref=e458]: 消息内容指纹 + anti-distillation 检测
+                    - row "4 自动化滥用 中 CI/CD 环境检测 + 非交互模式识别 + 异常 token 消耗" [ref=e459]:
+                      - cell "4" [ref=e460]:
+                        - generic [ref=e466]: "4"
+                      - cell "自动化滥用" [ref=e467]:
+                        - generic [ref=e473]: 自动化滥用
+                      - cell "中" [ref=e474]:
+                        - generic [ref=e480]: 中
+                      - cell "CI/CD 环境检测 + 非交互模式识别 + 异常 token 消耗" [ref=e481]:
+                        - generic [ref=e487]: CI/CD 环境检测 + 非交互模式识别 + 异常 token 消耗
+                    - row "5 使用非官方客户端/篡改 中 指纹校验失败 + 版本归因 header 异常" [ref=e488]:
+                      - cell "5" [ref=e489]:
+                        - generic [ref=e495]: "5"
+                      - cell "使用非官方客户端/篡改" [ref=e496]:
+                        - generic [ref=e502]: 使用非官方客户端/篡改
+                      - cell "中" [ref=e503]:
+                        - generic [ref=e509]: 中
+                      - cell "指纹校验失败 + 版本归因 header 异常" [ref=e510]:
+                        - generic [ref=e516]: 指纹校验失败 + 版本归因 header 异常
+              - generic [ref=e530]: 二、身份追踪体系
+              - generic [ref=e536]: 2.1 持久化标识符
+              - generic [ref=e541]: Claude Code 通过以下标识符跨会话永久追踪用户：
+              - generic [ref=e548]:
+                - table [ref=e549]:
+                  - row "标识符 生成方式 存储位置 生命周期" [ref=e550]:
+                    - cell "标识符" [ref=e551]:
+                      - generic [ref=e557]: 标识符
+                    - cell "生成方式" [ref=e558]:
+                      - generic [ref=e564]: 生成方式
+                    - cell "存储位置" [ref=e565]:
+                      - generic [ref=e571]: 存储位置
+                    - cell "生命周期" [ref=e572]:
+                      - generic [ref=e578]: 生命周期
+                - table [ref=e582]:
+                  - rowgroup [ref=e588]:
+                    - row "Device ID randomBytes(32).toString('hex') ~/.claude.json 永久，除非手动删除" [ref=e589]:
+                      - cell "Device ID" [ref=e590]:
+                        - generic [ref=e596]: Device ID
+                      - cell "randomBytes(32).toString('hex')" [ref=e597]:
+                        - generic [ref=e605]: randomBytes(32).toString('hex')
+                      - cell "~/.claude.json" [ref=e606]:
+                        - generic [ref=e614]: ~/.claude.json
+                      - cell "永久，除非手动删除" [ref=e615]:
+                        - generic [ref=e621]: 永久，除非手动删除
+                    - row "Account UUID OAuth 登录时服务端下发 ~/.claude.json 绑定账号" [ref=e622]:
+                      - cell "Account UUID" [ref=e623]:
+                        - generic [ref=e629]: Account UUID
+                      - cell "OAuth 登录时服务端下发" [ref=e630]:
+                        - generic [ref=e636]: OAuth 登录时服务端下发
+                      - cell "~/.claude.json" [ref=e637]:
+                        - generic [ref=e645]: ~/.claude.json
+                      - cell "绑定账号" [ref=e646]:
+                        - generic [ref=e652]: 绑定账号
+                    - row "Organization UUID OAuth 登录时下发 同上 绑定组织" [ref=e653]:
+                      - cell "Organization UUID" [ref=e654]:
+                        - generic [ref=e660]: Organization UUID
+                      - cell "OAuth 登录时下发" [ref=e661]:
+                        - generic [ref=e667]: OAuth 登录时下发
+                      - cell "同上" [ref=e668]:
+                        - generic [ref=e674]: 同上
+                      - cell "绑定组织" [ref=e675]:
+                        - generic [ref=e681]: 绑定组织
+                    - row "Session ID randomUUID() 每次会话生成 内存 单次会话" [ref=e682]:
+                      - cell "Session ID" [ref=e683]:
+                        - generic [ref=e689]: Session ID
+                      - cell "randomUUID() 每次会话生成" [ref=e690]:
+                        - generic [ref=e696]:
+                          - generic [ref=e698]: randomUUID()
+                          - text: 每次会话生成
+                      - cell "内存" [ref=e699]:
+                        - generic [ref=e705]: 内存
+                      - cell "单次会话" [ref=e706]:
+                        - generic [ref=e712]: 单次会话
+                    - row "Email OAuth 或 git config user.email 同上 绑定身份" [ref=e713]:
+                      - cell "Email" [ref=e714]:
+                        - generic [ref=e720]: Email
+                      - cell "OAuth 或 git config user.email" [ref=e721]:
+                        - generic [ref=e727]:
+                          - text: OAuth 或
+                          - generic [ref=e729]: git config user.email
+                      - cell "同上" [ref=e730]:
+                        - generic [ref=e736]: 同上
+                      - cell "绑定身份" [ref=e737]:
+                        - generic [ref=e743]: 绑定身份
+              - generic [ref=e750]:
+                - generic [ref=e754]: 🎁
+                - generic [ref=e761]: Device ID 是 256 位随机值，首次运行时生成并永久存储。它是所有事件上报的核心标识，Anthropic 可通过它精确关联同一设备上的所有活动。
+          - generic:
+            - generic [ref=e765] [cursor=pointer]: "2"
+            - generic [ref=e768] [cursor=pointer]: "5"
+          - img [ref=e771] [cursor=pointer]
+          - generic [ref=e774]:
+            - generic [ref=e776]:
+              - generic [ref=e777]: Comments (11)
+              - img [ref=e781] [cursor=pointer]
+            - generic [ref=e785]:
+              - generic [ref=e787] [cursor=pointer]:
+                - generic [ref=e789]: Claude Code 封号机制深度探查报告
+                - generic [ref=e790]:
+                  - generic [ref=e793]:
+                    - generic [ref=e794]:
+                      - img [ref=e795]
+                      - img [ref=e799]
+                    - generic [ref=e800]:
+                      - generic [ref=e803]:
+                        - generic [ref=e804]: user 9327
+                        - generic [ref=e805]: 1:48 PM Mar 31 (edited)
+                      - generic [ref=e813]: AI把50多万行代码都读了？
+                  - generic [ref=e816]:
+                    - generic [ref=e817]:
+                      - img [ref=e818]
+                      - img [ref=e822]
+                    - generic [ref=e823]:
+                      - generic [ref=e826]:
+                        - generic [ref=e827]: user 1384
+                        - generic [ref=e828]: 1:50 PM Mar 31
+                      - generic [ref=e838]: "@user 9327"
+              - generic [ref=e847] [cursor=pointer]:
+                - generic [ref=e849]: ~/.claude/config.json 永久，除非手动删除
+                - generic [ref=e850]:
+                  - generic [ref=e853]:
+                    - generic [ref=e854]:
+                      - img [ref=e855]
+                      - img [ref=e859]
+                    - generic [ref=e860]:
+                      - generic [ref=e863]:
+                        - generic [ref=e864]: user 2304
+                        - generic [ref=e865]: 4:24 PM Mar 31
+                      - generic [ref=e873]: 看我本地没这个文件呀
+                  - generic [ref=e876]:
+                    - generic [ref=e877]:
+                      - img [ref=e878]
+                      - img [ref=e882]
+                    - generic [ref=e883]:
+                      - generic [ref=e886]:
+                        - generic [ref=e887]: user 6556
+                        - generic [ref=e888]: 5:09 PM Mar 31
+                      - generic [ref=e896]: +1，确定是这个文件吗？
+                  - generic [ref=e899]:
+                    - generic [ref=e900]:
+                      - img [ref=e901]
+                      - img [ref=e905]
+                    - generic [ref=e906]:
+                      - generic [ref=e909]:
+                        - generic [ref=e910]: user 1384
+                        - generic [ref=e911]: 5:45 PM Mar 31
+                      - generic [ref=e919]: "`~/.claude.json` 已经修改成正确的了"
+                  - generic [ref=e922]:
+                    - generic [ref=e923]:
+                      - img [ref=e924]
+                      - img [ref=e928]
+                    - generic [ref=e929]:
+                      - generic [ref=e932]:
+                        - generic [ref=e933]: user 4969
+                        - generic [ref=e934]: 6:02 PM Mar 31
+                      - generic [ref=e942]: 这个应该指的是 userID 字段吧，没找到 device id，而且 telemetry 目录下的打点日志里 device_id 也是 userID 的值。
+                  - generic [ref=e945]:
+                    - generic [ref=e946]:
+                      - img [ref=e947]
+                      - img [ref=e951]
+                    - generic [ref=e952]:
+                      - generic [ref=e955]:
+                        - generic [ref=e956]: user 1384
+                        - generic [ref=e957]: 6:08 PM Mar 31
+                      - generic [ref=e965]: 对，在这个文件里是 userID
+          - button [ref=e967] [cursor=pointer]:
+            - img [ref=e969]
+    - generic:
+      - generic:
+        - generic:
+          - menu:
+            - generic:
+              - generic:
+                - menuitem "Help Center":
+                  - generic:
+                    - generic:
+                      - img
+                  - generic: Help Center
+              - generic:
+                - menuitem "Keyboard Shortcuts":
+                  - generic:
+                    - generic:
+                      - img
+                  - generic: Keyboard Shortcuts
+        - img [ref=e975] [cursor=pointer]
+  - textbox [active] [ref=e978]

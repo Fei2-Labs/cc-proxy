@@ -1,0 +1,633 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - link "Feishu Docs" [ref=e10] [cursor=pointer]:
+            - /url: https://www.feishu.cn
+            - img [ref=e13]
+            - generic [ref=e17]: Feishu Docs
+          - img [ref=e21] [cursor=pointer]
+        - generic [ref=e24]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e29]:
+                - generic [ref=e30]: ByteDance
+                - img [ref=e31]
+              - paragraph [ref=e33]:
+                - generic [ref=e34]: Claude Code 封号机制深度探查报告
+            - paragraph [ref=e37]: "Last updated: Mar 31"
+          - generic [ref=e1005]:
+            - button "Log In or Sign Up" [ref=e1007] [cursor=pointer]
+            - button [ref=e1008] [cursor=pointer]:
+              - img [ref=e1010]
+      - generic [ref=e51]:
+        - list [ref=e59] [cursor=pointer]:
+          - listitem
+          - listitem [ref=e60]:
+            - link "Claude Code 封号机制深度探查报告" [ref=e61]:
+              - /url: "#QNsIdi8VFoKm00xY8SRlkXxygve"
+              - img [ref=e63]
+              - text: Claude Code 封号机制深度探查报告
+          - listitem [ref=e65]:
+            - link "Claude Code 封号机制深度探查报告" [ref=e66]:
+              - /url: "#doxlghDtY98hJQJf0gvGCBWwAmh"
+              - img [ref=e68]
+              - text: Claude Code 封号机制深度探查报告
+          - listitem [ref=e70]:
+            - link "一、核心结论" [ref=e71]:
+              - /url: "#doxlg8p7eeaL1zSAwFCWpawiggb"
+              - img [ref=e73]
+              - text: 一、核心结论
+          - listitem [ref=e75]:
+            - link "封号最可能的 5 大原因" [ref=e76]:
+              - /url: "#doxlg0HxRhlCOSKJroMdVkpOJQb"
+              - img [ref=e78]
+              - text: 封号最可能的 5 大原因
+          - listitem [ref=e80]:
+            - link "二、身份追踪体系" [ref=e81]:
+              - /url: "#doxlgSBRuEHM4G1DTviNqkgjmgf"
+              - img [ref=e83]
+              - text: 二、身份追踪体系
+          - listitem [ref=e85]:
+            - link "2.1 持久化标识符" [ref=e86]:
+              - /url: "#doxlgyKr5fHxhUwXAKrp7hjmvCv"
+              - img [ref=e88]
+              - text: 2.1 持久化标识符
+          - listitem [ref=e90]:
+            - link "2.2 消息内容指纹（Fingerprint）" [ref=e91]:
+              - /url: "#doxlgwf17J5NhXzEgwfMt29fQHb"
+              - img [ref=e93]
+              - text: 2.2 消息内容指纹（Fingerprint）
+          - listitem [ref=e95]:
+            - link "2.3 每次 API 请求携带的身份信息" [ref=e96]:
+              - /url: "#doxlgaHL5Mfrfgg81WByWKoU1oe"
+              - img [ref=e98]
+              - text: 2.3 每次 API 请求携带的身份信息
+          - listitem [ref=e100]:
+            - link "三、环境指纹采集（40+ 维度）" [ref=e101]:
+              - /url: "#doxlg1BB4ESiwbaTUszSWv2yMeb"
+              - img [ref=e103]
+              - text: 三、环境指纹采集（40+ 维度）
+          - listitem [ref=e105]:
+            - link "3.1 系统级信息" [ref=e106]:
+              - /url: "#doxlgzSJ3EJeg7QfQoMxJweCZzb"
+              - img [ref=e108]
+              - text: 3.1 系统级信息
+          - listitem [ref=e110]:
+            - link "3.2 运行环境检测（40+ 种）" [ref=e111]:
+              - /url: "#doxlgMQyvuDamckFw6W75tIkv9e"
+              - img [ref=e113]
+              - text: 3.2 运行环境检测（40+ 种）
+          - listitem [ref=e115]:
+            - link "3.3 开发工具链" [ref=e116]:
+              - /url: "#doxlgzGqnqEoV7E3Laqqd1z0Paf"
+              - img [ref=e118]
+              - text: 3.3 开发工具链
+          - listitem [ref=e120]:
+            - link "3.4 GitHub Actions 专项采集" [ref=e121]:
+              - /url: "#doxlgyeF2vxjeWmtKOba9nxExxc"
+              - img [ref=e123]
+              - text: 3.4 GitHub Actions 专项采集
+          - listitem [ref=e125]:
+            - link "四、遥测上报系统" [ref=e126]:
+              - /url: "#doxlguQZp4ugUNJAyKM2FI5KkLe"
+              - img [ref=e128]
+              - text: 四、遥测上报系统
+          - listitem [ref=e130]:
+            - link "4.1 三路并发上报架构" [ref=e131]:
+              - /url: "#doxlgEj0Iu6yGnWHyfUd0Pocr5L"
+              - img [ref=e133]
+              - text: 4.1 三路并发上报架构
+          - listitem [ref=e135]:
+            - link "4.2 第一方事件日志（最核心）" [ref=e136]:
+              - /url: "#doxlgqOVyt8wvNb9B977k31MzGe"
+              - img [ref=e138]
+              - text: 4.2 第一方事件日志（最核心）
+          - listitem [ref=e140]:
+            - link "4.3 每个事件附带的元数据" [ref=e141]:
+              - /url: "#doxlg6MzcuAhNPW1Wqc0wkJb6re"
+              - img [ref=e143]
+              - text: 4.3 每个事件附带的元数据
+          - listitem [ref=e145]:
+            - link "4.4 Datadog 上报" [ref=e146]:
+              - /url: "#doxlgMc7r4wZJcgRA7f6KMIsyfe"
+              - img [ref=e148]
+              - text: 4.4 Datadog 上报
+          - listitem [ref=e150]:
+            - link "4.5 GrowthBook 双向数据交换" [ref=e151]:
+              - /url: "#doxlgVJ7oReLrADSRK5WzsQcG4g"
+              - img [ref=e153]
+              - text: 4.5 GrowthBook 双向数据交换
+          - listitem [ref=e155]:
+            - link "五、服务端远程控制机制" [ref=e156]:
+              - /url: "#doxlg4yfpDtDMiqDmtoucuseAUd"
+              - img [ref=e158]
+              - text: 五、服务端远程控制机制
+          - listitem [ref=e160]:
+            - link "5.1 Policy Limits（组织级策略限制）" [ref=e161]:
+              - /url: "#doxlgJh6E17pOK92luMoqIAHnHh"
+              - img [ref=e163]
+              - text: 5.1 Policy Limits（组织级策略限制）
+          - listitem [ref=e165]:
+            - link "5.2 Remote Managed Settings（远程设置推送）" [ref=e166]:
+              - /url: "#doxlgf6UVhS4JY46NbS6X3fzMLU"
+              - img [ref=e168]
+              - text: 5.2 Remote Managed Settings（远程设置推送）
+          - listitem [ref=e170]:
+            - link "5.3 版本强制升级" [ref=e171]:
+              - /url: "#doxlgrMMmBf83wTYUgXkgEXxhCp"
+              - img [ref=e173]
+              - text: 5.3 版本强制升级
+          - listitem [ref=e175]:
+            - link "5.4 功能标志灰度控制" [ref=e176]:
+              - /url: "#doxlgUVGgVt2nyjPpNCCKem0Kmf"
+              - img [ref=e178]
+              - text: 5.4 功能标志灰度控制
+          - listitem [ref=e180]:
+            - link "六、封号触发机制深度分析" [active] [ref=e181]:
+              - /url: "#doxlgOkisYU0I1B2a0umVWxPwPg"
+              - img [ref=e183]
+              - text: 六、封号触发机制深度分析
+          - listitem [ref=e185]:
+            - link "6.1 身份关联检测（账号共享）" [ref=e186]:
+              - /url: "#doxlgZKHOe1fGhQ5w6HAyxQuOrd"
+              - img [ref=e188]
+              - text: 6.1 身份关联检测（账号共享）
+          - listitem [ref=e190]:
+            - link "6.2 速率限制违规" [ref=e191]:
+              - /url: "#doxlgLtGj6mJ52NnVjjGyW3OtWe"
+              - img [ref=e193]
+              - text: 6.2 速率限制违规
+          - listitem [ref=e195]:
+            - link "6.3 内容策略违规" [ref=e196]:
+              - /url: "#doxlgDwFGAWsRw6LUoVch0LcmWf"
+              - img [ref=e198]
+              - text: 6.3 内容策略违规
+          - listitem [ref=e200]:
+            - link "6.4 自动化滥用检测" [ref=e201]:
+              - /url: "#doxlgXFcXNeVy0PGoQWqfP9s6SG"
+              - img [ref=e203]
+              - text: 6.4 自动化滥用检测
+          - listitem [ref=e205]:
+            - link "6.5 客户端篡改检测" [ref=e206]:
+              - /url: "#doxlgnn6CRCi0apt7vBpbpACfbe"
+              - img [ref=e208]
+              - text: 6.5 客户端篡改检测
+          - listitem [ref=e210]:
+            - link "七、完整数据流向全景图" [ref=e211]:
+              - /url: "#doxlgzNXBHVGahYTnHxEEc828Je"
+              - img [ref=e213]
+              - text: 七、完整数据流向全景图
+          - listitem [ref=e215]:
+            - link "八、所有外部通信端点汇总" [ref=e216]:
+              - /url: "#doxlg9twwVXRXINLUze6jiK86hb"
+              - img [ref=e218]
+              - text: 八、所有外部通信端点汇总
+          - listitem [ref=e220]:
+            - link "九、自我保护建议" [ref=e221]:
+              - /url: "#doxlgdNanHUtXCTXnX36g1xjQvb"
+              - img [ref=e223]
+              - text: 九、自我保护建议
+          - listitem [ref=e225]:
+            - link "9.1 环境变量防护" [ref=e226]:
+              - /url: "#doxlgDUVp91JiIEF4HT4E7FjTqO"
+              - img [ref=e228]
+              - text: 9.1 环境变量防护
+          - listitem [ref=e230]:
+            - link "9.2 使用注意事项" [ref=e231]:
+              - /url: "#doxlg5KZxGbTusHrjDkoszHtrTg"
+              - img [ref=e233]
+              - text: 9.2 使用注意事项
+          - listitem [ref=e235]:
+            - link "9.3 关键文件清理" [ref=e236]:
+              - /url: "#doxlgJ17pofVKPCtGK9lMmhLUff"
+              - img [ref=e238]
+              - text: 9.3 关键文件清理
+          - listitem [ref=e240]:
+            - link "十、总结" [ref=e241]:
+              - /url: "#doxlg5mFHtpULvw8jPvCLp9hhTb"
+              - img [ref=e243]
+              - text: 十、总结
+          - listitem
+        - generic [ref=e247]:
+          - generic [ref=e256]:
+            - generic [ref=e257]:
+              - heading "Claude Code 封号机制深度探查报告" [level=1] [ref=e259]:
+                - generic [ref=e261]: Claude Code 封号机制深度探查报告
+              - generic [ref=e266]: Modified March 31
+            - generic [ref=e269]:
+              - generic [ref=e1017]: 5.2 Remote Managed Settings（远程设置推送）
+              - generic [ref=e1022]:
+                - text: 端点：
+                - generic [ref=e1024]: /api/claude_code/settings
+              - generic [ref=e1029]: 能力：
+              - generic [ref=e1032]:
+                - generic [ref=e1034]: •
+                - generic [ref=e1037]:
+                  - text: 远程推送
+                  - generic [ref=e1039]: settings.json
+                  - text: 配置
+              - generic [ref=e1042]:
+                - generic [ref=e1044]: •
+                - generic [ref=e1047]: 修改客户端行为
+              - generic [ref=e1050]:
+                - generic [ref=e1052]: •
+                - generic [ref=e1055]: 企业治理
+              - generic [ref=e1061]: 5.3 版本强制升级
+              - generic [ref=e1066]:
+                - text: 通过 GrowthBook 配置
+                - generic [ref=e1068]: tengu_version_config
+                - text: 下发最低版本要求，可强制旧版本用户升级。
+              - generic [ref=e1074]: 5.4 功能标志灰度控制
+              - generic [ref=e1079]: 服务端可通过 GrowthBook 对特定用户/组织：
+              - generic [ref=e1082]:
+                - generic [ref=e1084]: •
+                - generic [ref=e1087]: 关闭特定功能
+              - generic [ref=e1090]:
+                - generic [ref=e1092]: •
+                - generic [ref=e1095]: 调整速率限制
+              - generic [ref=e1098]:
+                - generic [ref=e1100]: •
+                - generic [ref=e1103]: 修改采样率
+              - generic [ref=e1106]:
+                - generic [ref=e1108]: •
+                - generic [ref=e1111]: 启用/禁用 Beta 特性
+              - generic [ref=e1123]: 六、封号触发机制深度分析
+              - generic [ref=e1129]: 6.1 身份关联检测（账号共享）
+              - generic [ref=e1142]:
+                - generic [ref=e1144]:
+                  - textbox
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                        - textbox "Search"
+                      - generic: 0 results
+                      - button [disabled]:
+                        - generic:
+                          - img
+                      - button:
+                        - generic:
+                          - img
+              - generic [ref=e1151]: 检测依据：
+              - generic [ref=e1154]:
+                - generic [ref=e1156]: •
+                - generic [ref=e1159]: 同一 Account UUID 出现在多个 Device ID 上
+              - generic [ref=e1162]:
+                - generic [ref=e1164]: •
+                - generic [ref=e1167]: 不同 IP、不同操作系统、不同时区的设备使用同一账号
+              - generic [ref=e1170]:
+                - generic [ref=e1172]: •
+                - generic [ref=e1175]: 短时间内在不同地理位置登录
+              - generic [ref=e1181]: 6.2 速率限制违规
+              - generic [ref=e1186]: 检测链路：
+              - generic [ref=e1189]:
+                - generic [ref=e1190]: "1."
+                - generic [ref=e1193]:
+                  - text: 每次 API 请求上报
+                  - generic [ref=e1195]: tengu_api_success
+                  - text: ，包含 token 用量和模型
+              - generic [ref=e1198]:
+                - generic [ref=e1199]: "2."
+                - generic [ref=e1202]:
+                  - text: 服务端按
+                  - generic [ref=e1204]: account_uuid
+                  - text: +
+                  - generic [ref=e1206]: subscription_type
+                  - text: +
+                  - generic [ref=e1208]: rate_limit_tier
+                  - text: 聚合
+              - generic [ref=e1211]:
+                - generic [ref=e1212]: "3."
+                - generic [ref=e1215]: 超出配额阈值 → 429 错误 → 继续违规 → 触发封号
+              - generic [ref=e1220]: 上报的关键指标：
+              - generic [ref=e1227]:
+                - table [ref=e1228]:
+                  - row "指标 说明" [ref=e1229]:
+                    - cell "指标" [ref=e1230]:
+                      - generic [ref=e1236]: 指标
+                    - cell "说明" [ref=e1237]:
+                      - generic [ref=e1243]: 说明
+                - table [ref=e1247]:
+                  - rowgroup [ref=e1251]:
+                    - row "inputTokens 输入 token 数" [ref=e1252]:
+                      - cell "inputTokens" [ref=e1253]:
+                        - generic [ref=e1261]: inputTokens
+                      - cell "输入 token 数" [ref=e1262]:
+                        - generic [ref=e1268]: 输入 token 数
+                    - row "outputTokens 输出 token 数" [ref=e1269]:
+                      - cell "outputTokens" [ref=e1270]:
+                        - generic [ref=e1278]: outputTokens
+                      - cell "输出 token 数" [ref=e1279]:
+                        - generic [ref=e1285]: 输出 token 数
+                    - row "cacheReadTokens 缓存读取 token" [ref=e1286]:
+                      - cell "cacheReadTokens" [ref=e1287]:
+                        - generic [ref=e1295]: cacheReadTokens
+                      - cell "缓存读取 token" [ref=e1296]:
+                        - generic [ref=e1302]: 缓存读取 token
+                    - row "cacheCreationTokens 缓存创建 token" [ref=e1303]:
+                      - cell "cacheCreationTokens" [ref=e1304]:
+                        - generic [ref=e1312]: cacheCreationTokens
+                      - cell "缓存创建 token" [ref=e1313]:
+                        - generic [ref=e1319]: 缓存创建 token
+                    - row "costUsd 每次请求的美元成本" [ref=e1320]:
+                      - cell "costUsd" [ref=e1321]:
+                        - generic [ref=e1329]: costUsd
+                      - cell "每次请求的美元成本" [ref=e1330]:
+                        - generic [ref=e1336]: 每次请求的美元成本
+                    - row "duration 请求耗时" [ref=e1337]:
+                      - cell "duration" [ref=e1338]:
+                        - generic [ref=e1346]: duration
+                      - cell "请求耗时" [ref=e1347]:
+                        - generic [ref=e1353]: 请求耗时
+                    - row "model 使用的模型" [ref=e1354]:
+                      - cell "model" [ref=e1355]:
+                        - generic [ref=e1363]: model
+                      - cell "使用的模型" [ref=e1364]:
+                        - generic [ref=e1370]: 使用的模型
+          - generic [ref=e765] [cursor=pointer]: "2"
+          - img [ref=e771] [cursor=pointer]
+          - generic [ref=e776]:
+            - generic [ref=e777]: Comments (11)
+            - img [ref=e781] [cursor=pointer]
+          - button [ref=e967] [cursor=pointer]:
+            - img [ref=e969]
+          - generic [ref=e1374]:
+            - generic [ref=e1375]: Comments
+            - generic [ref=e1380]:
+              - generic [ref=e1381] [cursor=pointer]:
+                - img [ref=e1382]
+                - img [ref=e1386]
+              - generic [ref=e1387]:
+                - generic [ref=e1390]:
+                  - generic [ref=e1391]: user 8418
+                  - generic [ref=e1392]: 4:38 PM Mar 31
+                - generic [ref=e1393]:
+                  - generic [ref=e1397]:
+                    - generic [ref=e1399]:
+                      - generic [ref=e1400]: 有几处小勘误供参考：1P 事件默认批量间隔是 10 秒而非 5 秒 [^2]；Datadog 白名单实际是 44
+                      - generic [ref=e1401]: 种事件而非 64 种 [^3]；GrowthBook 刷新频率对外部用户是 6 小时，20 分钟是 Anthropic 内部员工专用
+                      - generic [ref=e1402]: "[^4]；重试策略是二次退避（attempts²）而非指数退避 [^5]。另外 x-anthropic-additional-protection"
+                      - generic [ref=e1403]: 并非默认发送，需显式设置 CLAUDE_CODE_ADDITIONAL_PROTECTION=1 才生效 [^6]。
+                      - generic [ref=e1405]: 还有一个值得补充的点：当前版本 Statsig 已基本被 GrowthBook
+                      - generic [ref=e1406]: 取代，文中描述的是迁移前的架构；以及有个未提及的 NATIVE_CLIENT_ATTESTATION 机制，Bun 的原生 HTTP
+                      - generic [ref=e1407]: 栈会在请求体里注入客户端证明 token（cch=），是比指纹更深层的客户端真实性校验 [^7]。
+                      - generic [ref=e1409]: 总体是目前见过对 Claude Code 遥测机制最完整的分析之一，感谢分享。
+                      - generic [ref=e1411]: "---"
+                      - generic [ref=e1412]: "[^1]: src/utils/fingerprint.ts:8 — FINGERPRINT_SALT = '59cf53e54c78'；fingerprint.ts:54-62 — 算法实现"
+                      - generic [ref=e1413]: "[^2]: src/services/analytics/firstPartyEventLogger.ts:300 — DEFAULT_LOGS_EXPORT_INTERVAL_MS = 10000"
+                      - generic [ref=e1414]: "[^3]: src/services/analytics/datadog.ts:19-64 — DATADOG_ALLOWED_EVENTS Set，实际 44 条"
+                      - generic [ref=e1415]: "[^4]: src/services/analytics/growthbook.ts:1013-1016 — 6 * 60 * 60 * 1000 for external，20 * 60 * 1000 for"
+                      - generic [ref=e1416]: USER_TYPE === 'ant'
+                      - generic [ref=e1417]: "[^5]: src/services/analytics/firstPartyEventLoggingExporter.ts:452 — 注释原文：\"Quadratic backoff"
+                      - generic [ref=e1418]: "(matching Statsig SDK): base * attempts²\""
+                      - generic [ref=e1419]: "[^6]: src/services/api/client.ts:126-129 — if (isEnvTruthy(process.env.CLAUDE_CODE_ADDITIONAL_PROTECTION))"
+                      - generic [ref=e1420]: "[^7]: src/constants/system.ts:68,82 — NATIVE_CLIENT_ATTESTATION feature flag，cch=00000 placeholder 由 Bun"
+                      - generic [ref=e1421]: HTTP 层覆写
+                    - generic [ref=e1423] [cursor=pointer]: Expand
+                  - generic [ref=e1427]:
+                    - img "Like" [ref=e1430] [cursor=pointer]
+                    - generic [ref=e1432]:
+                      - generic [ref=e1433]: user 8418,
+                      - generic [ref=e1434]: user 1384,
+                      - generic [ref=e1435]: user 3014,
+                      - generic [ref=e1436]: user 8192,
+                      - generic [ref=e1437]: user 2538
+            - generic [ref=e1442]:
+              - generic [ref=e1443] [cursor=pointer]:
+                - img [ref=e1444]
+                - img [ref=e1448]
+              - generic [ref=e1449]:
+                - generic [ref=e1452]:
+                  - generic [ref=e1453]: user 7587
+                  - generic [ref=e1454]: 5:08 PM Mar 31
+                - generic [ref=e1455]:
+                  - generic [ref=e1462]: 既然claude code这么喜欢上报数据封号，这么反中，去抓美国人的账号信息伪造指纹、事件数据对着这几个上报API不停的发，都封掉吧，都别用了。
+                  - generic [ref=e1466]:
+                    - img "Like" [ref=e1469] [cursor=pointer]
+                    - generic [ref=e1471]:
+                      - generic [ref=e1472]: user 4792,
+                      - generic [ref=e1473]: user 8872,
+                      - generic [ref=e1474]: user 8974,
+                      - generic [ref=e1475]: user 8515,
+                      - generic [ref=e1476]: user 8092,
+                      - generic [ref=e1477]: user 1639
+            - generic [ref=e1482]:
+              - generic [ref=e1483] [cursor=pointer]:
+                - img [ref=e1484]
+                - img [ref=e1488]
+              - generic [ref=e1489]:
+                - generic [ref=e1492]:
+                  - generic [ref=e1493]: user 8418
+                  - generic [ref=e1494]: 5:23 PM Mar 31
+                - generic [ref=e1495]:
+                  - generic [ref=e1501]:
+                    - generic [ref=e1502]:
+                      - generic [ref=e1504] [cursor=pointer]: "@user 8418"
+                      - text: 安利一个相关的项目，cac 是通过伪造指纹实现 claude code 防封的开源项目.
+                    - generic [ref=e1505]: 欢迎大家为 cac提 bug、提 issue、pr. cac 是冲在 claude code 防封的一线的开源项目.希望多多各位大佬多多支持。
+                    - link "https://github.com/nmhjklnm/cac" [ref=e1508] [cursor=pointer]:
+                      - /url: https://github.com/nmhjklnm/cac
+                  - generic [ref=e1512]:
+                    - img "Like" [ref=e1515] [cursor=pointer]
+                    - generic [ref=e1517]:
+                      - generic [ref=e1518]: user 9801,
+                      - generic [ref=e1519]: user 7103,
+                      - generic [ref=e1520]: user 7155,
+                      - generic [ref=e1521]: user 8974,
+                      - generic [ref=e1522]: user 7608
+            - generic [ref=e1527]:
+              - generic [ref=e1528] [cursor=pointer]:
+                - img [ref=e1529]
+                - img [ref=e1533]
+              - generic [ref=e1534]:
+                - generic [ref=e1537]:
+                  - generic [ref=e1538]: user 5488
+                  - generic [ref=e1539]: 5:23 PM Mar 31
+                - generic [ref=e1540]:
+                  - generic [ref=e1547]:
+                    - generic [ref=e1549] [cursor=pointer]: "@user 8418"
+                    - text: 今天用了，还是15分钟就被封了
+                  - generic [ref=e1552]:
+                    - generic [ref=e1553]:
+                      - img "Like" [ref=e1556] [cursor=pointer]
+                      - generic [ref=e1558]:
+                        - generic [ref=e1559]: user 3031,
+                        - generic [ref=e1560]: user 3852
+                    - generic [ref=e1561]:
+                      - img "Smirk" [ref=e1564] [cursor=pointer]
+                      - generic [ref=e1566]:
+                        - generic [ref=e1567]: user 7005,
+                        - generic [ref=e1568]: user 4149
+            - generic [ref=e1573]:
+              - generic [ref=e1574] [cursor=pointer]:
+                - img [ref=e1575]
+                - img [ref=e1579]
+              - generic [ref=e1580]:
+                - generic [ref=e1583]:
+                  - generic [ref=e1584]: user 8418
+                  - generic [ref=e1585]: 5:27 PM Mar 31
+                - generic [ref=e1592]:
+                  - generic [ref=e1593]:
+                    - generic [ref=e1595] [cursor=pointer]: "@user 5488"
+                    - text: cac 保护的是设备指纹层——Device ID、主机名、MAC、遥测上报这些。15分钟内被封说明问题不在设备层，而在账号层，这块 cac 帮不上忙。建议你排查下：
+                  - generic [ref=e1596]: "- 支付方式：换一张独立的真实卡，避免多人共用的虚拟卡平台"
+                  - generic [ref=e1597]: "- 代理 IP：换声誉好的住宅 IP，数据中心 IP 风险高"
+                  - generic [ref=e1598]: "- 账号关联：注册时用全新的 email 和支付信息，和之前被封的账号彻底隔离"
+                  - generic [ref=e1599]: cac 的指纹是解决的是"同一个干净账号在多个设备上被关联"的问题，账号本身已经被标记的情况它无法逆转。
+            - generic [ref=e1604]:
+              - generic [ref=e1605] [cursor=pointer]:
+                - img [ref=e1606]
+                - img [ref=e1610]
+              - generic [ref=e1611]:
+                - generic [ref=e1614]:
+                  - generic [ref=e1615]: user 7293
+                  - generic [ref=e1616]: 5:32 PM Mar 31
+                - generic [ref=e1617]:
+                  - generic [ref=e1624]: anthropic，被大模型耽误的Next level CIA/FBI
+                  - generic [ref=e1627]:
+                    - generic [ref=e1628]:
+                      - img "Innocent" [ref=e1631] [cursor=pointer]
+                      - generic [ref=e1633]:
+                        - generic [ref=e1634]: user 7068,
+                        - generic [ref=e1635]: user 4021,
+                        - generic [ref=e1636]: user 2344,
+                        - generic [ref=e1637]: user 8461,
+                        - generic [ref=e1638]: user 5881
+                    - generic [ref=e1639]:
+                      - img "Lol" [ref=e1642] [cursor=pointer]
+                      - generic [ref=e1644]:
+                        - generic [ref=e1645]: user 2098,
+                        - generic [ref=e1646]: user 6684
+                    - generic [ref=e1647]:
+                      - img "Like" [ref=e1650] [cursor=pointer]
+                      - generic [ref=e1652]:
+                        - generic [ref=e1653]: user 8150,
+                        - generic [ref=e1654]: user 236,
+                        - generic [ref=e1655]: user 3118,
+                        - generic [ref=e1656]: user 4229,
+                        - generic [ref=e1657]: user 1490
+            - generic [ref=e1662]:
+              - generic [ref=e1663] [cursor=pointer]:
+                - img [ref=e1664]
+                - img [ref=e1668]
+              - generic [ref=e1669]:
+                - generic [ref=e1672]:
+                  - generic [ref=e1673]: user 4410
+                  - generic [ref=e1674]: 5:40 PM Mar 31
+                - generic [ref=e1675]:
+                  - generic [ref=e1681]:
+                    - generic [ref=e1682]: 这里梳理的客户端的逻辑更多是上报了什么数据，但是整个风控是分客户端和服务端的，而且风控有两个目的，第一个的话是反自动化调用，第二个是的话是反非合规地区的用户使用。
+                    - generic [ref=e1683]: 看下来整篇文章，其实主要解决的是第一个目的，反自动化使用。
+                    - generic [ref=e1684]: 但实际上中国大陆的用户更多的面临是第二个问题，老生常谈的 IP 手机号。支付手段这些算基本功。我提一个比较容易忽略的点，就是不要在手机上使用 Claude 的客户端。
+                    - generic [ref=e1685]: 就是核心原因在于手机上的传感器特别多，你没办法单纯通过 IP 来 隐藏你肉体在中国大陆的事实。具体逻辑见文章：
+                    - link "https://mp.weixin.qq.com/s/Set_2-M-QP2xSAhyl1MonQ" [ref=e1688] [cursor=pointer]:
+                      - /url: https://mp.weixin.qq.com/s/Set_2-M-QP2xSAhyl1MonQ
+                  - generic [ref=e1692]:
+                    - img "Like" [ref=e1695] [cursor=pointer]
+                    - generic [ref=e1698]: user 9417
+            - generic [ref=e1703]:
+              - generic [ref=e1704] [cursor=pointer]:
+                - img [ref=e1705]
+                - img [ref=e1709]
+              - generic [ref=e1710]:
+                - generic [ref=e1713]:
+                  - generic [ref=e1714]: user 7078
+                  - generic [ref=e1715]: 14:58 Yesterday (edited)
+                - generic [ref=e1723]: GitHub instructkr/claude-code 的泄露内容被上传者本人抹掉了，现在会重定向到 instructkr/claw-code，一个重写之后的版本。
+            - generic [ref=e1728]:
+              - generic [ref=e1729] [cursor=pointer]:
+                - img [ref=e1730]
+                - img [ref=e1734]
+              - generic [ref=e1735]:
+                - generic [ref=e1738]:
+                  - generic [ref=e1739]: user 627
+                  - generic [ref=e1740]: 03:25 Yesterday
+                - generic [ref=e1748]: 国内很多大模型并没有自己的工具，通过兼容anthropic协议，卖token，其实anthropic是完全有能力封掉这种行为的
+            - generic [ref=e1753]:
+              - generic [ref=e1754] [cursor=pointer]:
+                - img [ref=e1755]
+                - img [ref=e1759]
+              - generic [ref=e1760]:
+                - generic [ref=e1763]:
+                  - generic [ref=e1764]: user 1994
+                  - generic [ref=e1765]: 04:09 Yesterday
+                - generic [ref=e1766]:
+                  - generic [ref=e1772]:
+                    - generic [ref=e1773]:
+                      - text: 连夜写文，别关闭遥测，不然封号只会更快。
+                      - link "https://mp.weixin.qq.com/s/u7n88MCfTErSS2ZciQFcpw" [ref=e1775] [cursor=pointer]:
+                        - /url: https://mp.weixin.qq.com/s/u7n88MCfTErSS2ZciQFcpw
+                    - generic [ref=e1776]: 所有反风控的逻辑都应该是把自己像水一样融入大海模拟普通用户，而不是让自己成为人群中最闪光的那一个人。
+                  - generic [ref=e1780]:
+                    - img "Like" [ref=e1783] [cursor=pointer]
+                    - generic [ref=e1784]:
+                      - generic [ref=e1785]:
+                        - generic [ref=e1786]: user 1191,
+                        - generic [ref=e1787]: user 1639,
+                        - generic [ref=e1788]: user 7155,
+                        - generic [ref=e1789]: user 2144,
+                        - generic [ref=e1790]: user 3014,
+                      - generic [ref=e1791]: +10 more
+            - generic [ref=e1796]:
+              - generic [ref=e1797] [cursor=pointer]:
+                - img [ref=e1798]
+                - img [ref=e1802]
+              - generic [ref=e1803]:
+                - generic [ref=e1806]:
+                  - generic [ref=e1807]: user 1448
+                  - generic [ref=e1808]: 09:03 Yesterday
+                - generic [ref=e1816]: "666"
+            - generic [ref=e1821]:
+              - generic [ref=e1822] [cursor=pointer]:
+                - img [ref=e1823]
+                - img [ref=e1827]
+              - generic [ref=e1828]:
+                - generic [ref=e1831]:
+                  - generic [ref=e1832]: user 2725
+                  - generic [ref=e1833]: 4 hours ago
+                - generic [ref=e1840]:
+                  - generic [ref=e1841]:
+                    - generic [ref=e1843] [cursor=pointer]: "@user 1994"
+                    - text: 你的文章里有些错误的内容。像3月28日晚9点35分的那篇，提到不要在ios安装Claude APP，举了几个例子。
+                  - generic [ref=e1844]: 1. CoreLocation：必须由用户手动点击“授权”，如果被拒绝，你的代理方法里会收到错误回调。
+                  - generic [ref=e1845]: 2. MCC API：但是这个API在ios16已经被废弃，而Claude APP需要ios18+才能安装。
+                  - generic [ref=e1846]: 3. countryd 服务：这可是apple的私有接口，不是给第三方开发者调的。
+                  - generic [ref=e1848]: AI味很重，缺乏校对，对不知情且没有能力核验真伪的用户说服力强👍。
+            - generic [ref=e1853]:
+              - generic [ref=e1854] [cursor=pointer]:
+                - img [ref=e1855]
+                - img [ref=e1859]
+              - generic [ref=e1860]:
+                - generic [ref=e1863]:
+                  - generic [ref=e1864]: user 1994
+                  - generic [ref=e1865]: 1 hour ago
+                - generic [ref=e1872]:
+                  - generic [ref=e1873]:
+                    - generic [ref=e1875] [cursor=pointer]: "@user 2725"
+                    - text: 感谢指正。你说的对，没校对，这块纯 ai 自己写的。
+                  - generic [ref=e1876]: 但 meta 智能眼镜这个案例我确认。整个流程是通畅的。
+                  - generic [ref=e1877]: 风控黑盒无法验证，所以如果觉得不会从手机客户端入口做风控策略的话，我也支持。
+    - generic:
+      - generic:
+        - generic:
+          - menu:
+            - generic:
+              - generic:
+                - menuitem "Help Center":
+                  - generic:
+                    - generic:
+                      - img
+                  - generic: Help Center
+              - generic:
+                - menuitem "Keyboard Shortcuts":
+                  - generic:
+                    - generic:
+                      - img
+                  - generic: Keyboard Shortcuts
+        - img [ref=e975] [cursor=pointer]
+  - textbox [ref=e978]

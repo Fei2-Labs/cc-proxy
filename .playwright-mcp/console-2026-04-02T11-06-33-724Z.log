@@ -1,0 +1,45 @@
+[    8988ms] [WARNING] A parser-blocking, cross site (i.e. different eTLD+1) script, https://lf-package-sg.feishucdn.com/obj/lark-static-sg/ccm-vmok/web/lang/en-US.cc0598d1d66b98a0.js, is invoked via document.write. The network request for this script MAY be blocked by the browser in this or a future page load due to poor network connectivity. If blocked in this page load, it will be confirmed in a subsequent console message. See https://www.chromestatus.com/feature/5718547946799104 for more details. @ https://bytedance.sg.larkoffice.com/docx/QNsIdi8VFoKm00xY8SRlkXxygve:0
+[    8988ms] [WARNING] A parser-blocking, cross site (i.e. different eTLD+1) script, https://lf-package-sg.feishucdn.com/obj/lark-static-sg/ccm-vmok/web/lang/en-US.cc0598d1d66b98a0.js, is invoked via document.write. The network request for this script MAY be blocked by the browser in this or a future page load due to poor network connectivity. If blocked in this page load, it will be confirmed in a subsequent console message. See https://www.chromestatus.com/feature/5718547946799104 for more details. @ https://bytedance.sg.larkoffice.com/docx/QNsIdi8VFoKm00xY8SRlkXxygve:0
+[    8988ms] [WARNING] A parser-blocking, cross site (i.e. different eTLD+1) script, https://lf-package-sg.feishucdn.com/obj/lark-static-sg/eesz/bear/docx/module/ee/docs/docx/1.0.17.1680/lang/en-US.js, is invoked via document.write. The network request for this script MAY be blocked by the browser in this or a future page load due to poor network connectivity. If blocked in this page load, it will be confirmed in a subsequent console message. See https://www.chromestatus.com/feature/5718547946799104 for more details. @ https://bytedance.sg.larkoffice.com/docx/QNsIdi8VFoKm00xY8SRlkXxygve:0
+[   11012ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://bytedance.sg.larkoffice.com/facade/search/pull_search_settings?search_setting_type=1:0
+[   11607ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://internal-api-lark-api-sg.larkoffice.com/im/gateway/:0
+[   11899ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://project.larkoffice.com/goapi/v1/user/assets/login_assets:0
+[   12289ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   12692ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   12938ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13138ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/accounts/web/user?app_id=12&_t=1775128006459:0
+[   13149ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13355ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13494ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13532ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13570ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13573ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13660ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://internal-api-security.larkoffice.com/lark/scs/compliance/ping:0
+[   13695ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13780ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   13901ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   14037ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   14271ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   15001ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19234ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19238ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19436ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19444ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19641ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19646ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19842ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   19872ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   31237ms] [ERROR] The script resource is behind a redirect, which is disallowed. @ :0
+[   31305ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   31516ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   31724ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   31944ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://api16-sgsaas1-gateway-sg.larkoffice.com/im/gateway/:0
+[   40777ms] [TIMEEND] wasm init cost: 248.23681640625 ms @ https://lf-package-sg.feishucdn.com/obj/lark-static-sg/lark/whiteboard/block/pc/1.0.0.5333/index.js:9
+[   41815ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://internal-api-security.larkoffice.com/lark/scs/compliance/ping:0
+[   51237ms] [ERROR] The script resource is behind a redirect, which is disallowed. @ :0
+[   51240ms] [ERROR] The script resource is behind a redirect, which is disallowed. @ :0
+[   51242ms] [ERROR] The script resource is behind a redirect, which is disallowed. @ :0
+[   51250ms] [ERROR] The script resource is behind a redirect, which is disallowed. @ :0
+[   73701ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://internal-api-security.larkoffice.com/lark/scs/compliance/ping:0
+[  102098ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://internal-api-security.larkoffice.com/lark/scs/compliance/ping:0
+[  131180ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://internal-api-security.larkoffice.com/lark/scs/compliance/ping:0

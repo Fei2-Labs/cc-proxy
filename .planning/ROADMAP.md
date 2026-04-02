@@ -12,7 +12,7 @@ The v1.0 Admin Portal milestone adds a web-based management layer on top of the 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Admin Auth** - SQLite database, Next.js portal scaffold, and password-based admin login
+- [x] **Phase 1: Foundation & Admin Auth** - SQLite database, Next.js portal scaffold, and password-based admin login
 - [ ] **Phase 2: Token Management** - Web UI to create, list, and hot-reload client bearer tokens
 - [ ] **Phase 3: OAuth Web Setup** - Browser-based OAuth flow following the official Claude Code protocol
 - [ ] **Phase 4: Usage Logging** - Per-request logging pipeline writing model, tokens, latency, and client to SQLite
@@ -106,7 +106,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Admin Auth | 0/TBD | Not started | - |
+| 1. Foundation & Admin Auth | 3/3 | Complete | 2026-04-02 |
 | 2. Token Management | 0/TBD | Not started | - |
 | 3. OAuth Web Setup | 0/TBD | Not started | - |
 | 4. Usage Logging | 0/TBD | Not started | - |

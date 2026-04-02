@@ -4,3 +4,5 @@ dist/
 .env
 config.yaml
 certs/
+portal/.next/
+data/

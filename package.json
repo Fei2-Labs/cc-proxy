@@ -1,24 +1,45 @@
 {
   "name": "cc-gateway",
   "version": "0.1.0",
-  "description": "AI API identity gateway — reverse proxy that normalizes device fingerprints and telemetry for privacy-preserving API proxying",
+  "description": "AI API identity gateway \u2014 reverse proxy that normalizes device fingerprints and telemetry for privacy-preserving API proxying",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts",
+    "build": "tsc && next build portal",
+    "start": "node dist/server.js",
+    "dev": "tsx watch server.ts",
+    "dev:proxy": "tsx watch src/index.ts",
     "generate-token": "tsx src/scripts/generate-token.ts",
     "generate-identity": "tsx src/scripts/generate-identity.ts",
     "test": "tsx tests/rewriter.test.ts"
   },
   "dependencies": {
+    "better-sqlite3": "latest",
+    "clsx": "latest",
+    "jose": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwind-merge": "latest",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@types/better-sqlite3": "latest",
     "@types/node": "^22.0.0",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "tailwindcss": "^4.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild",
+      "sharp"
+    ]
   }
 }

@@ -9,6 +9,14 @@ import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
 import { audit, log } from './logger.js'
 
+export function createProxyHandler(config: Config) {
+  initAuth(config)
+  const upstream = new URL(config.upstream.url)
+  return (req: IncomingMessage, res: ServerResponse) => {
+    handleRequest(req, res, config, upstream)
+  }
+}
+
 export function startProxy(config: Config) {
   initAuth(config)
 
