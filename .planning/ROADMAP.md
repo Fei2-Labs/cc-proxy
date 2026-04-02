@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: OAuth Web Setup** - Browser-based OAuth flow following the official Claude Code protocol
 - [x] **Phase 4: Usage Logging** - Per-request logging pipeline writing model, tokens, latency, and client to SQLite
 - [x] **Phase 5: Usage Dashboard** - Per-client rollups, rate limit display, and estimated cost view
-- [ ] **Phase 6: Log Viewer** - Filterable, drillable request log UI for troubleshooting
+- [x] **Phase 6: Log Viewer** - Filterable, drillable request log UI for troubleshooting
 - [ ] **Phase 7: Deployment** - Single Docker image build, DockerHub publish, and Dokploy docker-compose
 
 ## Phase Details

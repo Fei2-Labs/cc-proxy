@@ -94,10 +94,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | USAGE-02 | Phase 5 | Complete |
 | USAGE-03 | Phase 5 | Complete |
 | USAGE-04 | Phase 5 | Complete |
-| LOG-01 | Phase 6 | Pending |
-| LOG-02 | Phase 6 | Pending |
-| LOG-03 | Phase 6 | Pending |
-| LOG-04 | Phase 6 | Pending |
+| LOG-01 | Phase 6 | Complete |
+| LOG-02 | Phase 6 | Complete |
+| LOG-03 | Phase 6 | Complete |
+| LOG-04 | Phase 6 | Complete |
 | DEPLOY-01 | Phase 7 | Pending |
 | DEPLOY-02 | Phase 7 | Pending |
 | DEPLOY-03 | Phase 7 | Pending |
