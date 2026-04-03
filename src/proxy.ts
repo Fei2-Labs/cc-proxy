@@ -153,6 +153,7 @@ async function handleRequest(
 
   // OpenAI Chat Completions → Anthropic Messages translation
   const isOpenAI = path === '/v1/chat/completions'
+  if (path.includes('chat')) log('info', `OpenAI check: path="${path}" isOpenAI=${isOpenAI}`)
   let openaiModel = ''
   if (isOpenAI && body.length > 0) {
     try {
