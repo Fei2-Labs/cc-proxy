@@ -32,6 +32,14 @@ export default function TokensPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
+  const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-20250514')
+
+  const models = [
+    { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
+    { id: 'claude-opus-4-20250514', name: 'Claude Opus 4' },
+    { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet' },
+    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
+  ]
 
   const fetchTokens = async () => {
     const res = await fetch('/api/tokens')
@@ -152,9 +160,18 @@ export default function TokensPage() {
       </div>
 
       <h2 className="text-lg font-bold font-mono mb-4">API Usage</h2>
-      {selectedToken !== 'YOUR_TOKEN' && (
-        <p className="text-xs text-[hsl(var(--muted-foreground))] mb-3">Using token: <code className="bg-[hsl(var(--muted))] px-1 rounded">{selectedToken.length > 20 ? selectedToken.slice(0, 20) + '...' : selectedToken}</code></p>
-      )}
+      <div className="flex items-center gap-4 mb-4">
+        {selectedToken !== 'YOUR_TOKEN' && (
+          <p className="text-xs text-[hsl(var(--muted-foreground))]">Token: <code className="bg-[hsl(var(--muted))] px-1 rounded">{selectedToken.length > 20 ? selectedToken.slice(0, 20) + '...' : selectedToken}</code></p>
+        )}
+        <select
+          value={selectedModel}
+          onChange={e => setSelectedModel(e.target.value)}
+          className="bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-md px-2 py-1 text-xs"
+        >
+          {models.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+        </select>
+      </div>
 
       <div className="space-y-4">
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
@@ -170,19 +187,19 @@ export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`}
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Send a message (curl)</p>
-            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer ${selectedToken}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"claude-sonnet-4-20250514","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
+            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer ${selectedToken}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"${selectedModel}","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`curl -X POST ${origin}/v1/messages \\
   -H "Authorization: Bearer ${selectedToken}" \\
   -H "Content-Type: application/json" \\
-  -d '{"model":"claude-sonnet-4-20250514","max_tokens":256,
+  -d '{"model":"${selectedModel}","max_tokens":256,
        "messages":[{"role":"user","content":"Hello"}]}'`}</pre>
         </div>
 
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Python (anthropic SDK)</p>
-            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="${selectedToken}",\n)\n\nmessage = client.messages.create(\n    model="claude-sonnet-4-20250514",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(message.content[0].text)`} />
+            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="${selectedToken}",\n)\n\nmessage = client.messages.create(\n    model="${selectedModel}",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(message.content[0].text)`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`import anthropic
 
@@ -192,7 +209,7 @@ client = anthropic.Anthropic(
 )
 
 message = client.messages.create(
-    model="claude-sonnet-4-20250514",
+    model="${selectedModel}",
     max_tokens=256,
     messages=[{"role": "user", "content": "Hello"}],
 )
