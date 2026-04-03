@@ -85,7 +85,7 @@ async function main() {
       res.end()
       return
     }
-    if (url.startsWith('/portal') || url.startsWith('/login') || url.startsWith('/api/auth') || url.startsWith('/api/tokens') || url.startsWith('/api/oauth') || url.startsWith('/api/usage') || url.startsWith('/api/logs') || url.startsWith('/_next') || url.startsWith('/favicon')) {
+    if (url.startsWith('/portal') || url.startsWith('/login') || url.startsWith('/api/auth') || url.startsWith('/api/tokens') || url.startsWith('/api/oauth') || url.startsWith('/api/usage') || url.startsWith('/api/logs') || url.startsWith('/api/models') || url.startsWith('/_next') || url.startsWith('/favicon')) {
       nextHandler(req, res)
       return
     }
