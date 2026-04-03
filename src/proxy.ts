@@ -153,7 +153,6 @@ async function handleRequest(
 
   // OpenAI Chat Completions → Anthropic Messages translation
   const isOpenAI = path === '/v1/chat/completions'
-  if (path.includes('chat')) log('info', `OpenAI check: path="${path}" isOpenAI=${isOpenAI}`)
   let openaiModel = ''
   if (isOpenAI && body.length > 0) {
     try {
@@ -310,6 +309,7 @@ async function handleRequest(
       const anthropicRes = JSON.parse(result.body.toString('utf-8'))
       const openaiRes = anthropicToOpenai(anthropicRes, openaiModel)
       result.body = Buffer.from(JSON.stringify(openaiRes), 'utf-8')
+      result.headers['content-length'] = String(result.body.length)
       log('debug', `Translated Anthropic→OpenAI response for ${openaiModel}`)
     } catch (err) {
       log('error', `OpenAI response translation failed: ${err}`)
