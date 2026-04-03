@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
-import { createToken, listTokens } from '../../../../src/db'
+import { createToken, listTokens, deleteToken } from '../../../../src/db'
 import { COOKIE_NAME } from '@/lib/auth'
 
 function requireAuth(request: NextRequest): boolean {
@@ -54,4 +54,14 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ error: msg }, { status: 500 })
   }
+}
+
+export async function DELETE(request: NextRequest) {
+  if (!requireAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const { id } = await request.json()
+  if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+  deleteToken(id)
+  return NextResponse.json({ ok: true })
 }

@@ -108,6 +108,10 @@ export function listTokens(): DbToken[] {
   return getDatabase().prepare('SELECT * FROM tokens ORDER BY created_at DESC').all() as DbToken[]
 }
 
+export function deleteToken(id: number): void {
+  getDatabase().prepare('DELETE FROM tokens WHERE id = ?').run(id)
+}
+
 export function authenticateToken(rawToken: string): string | null {
   const hash = hashToken(rawToken)
   const row = getDatabase().prepare(
