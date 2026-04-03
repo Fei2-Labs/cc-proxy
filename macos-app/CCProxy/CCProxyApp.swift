@@ -289,6 +289,11 @@ struct SetupView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(settings.serverURL.isEmpty || settings.apiKey.isEmpty)
+
+            Button("Quit") { NSApp.terminate(nil) }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+                .font(.caption)
         }
         .padding(24)
         .frame(width: 320)
