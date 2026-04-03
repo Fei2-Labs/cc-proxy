@@ -226,13 +226,24 @@ class OAuthManager: NSObject, ObservableObject, URLSessionDelegate {
 
         self.session.dataTask(with: codeReq) { data, resp, err in
             let statusCode = (resp as? HTTPURLResponse)?.statusCode ?? 0
+            let body = String(data: data ?? Data(), encoding: .utf8) ?? "nil"
+            let errMsg = err?.localizedDescription ?? "none"
+            let urlStr = codeReq.url?.absoluteString ?? "nil"
+            let hdrs = codeReq.allHTTPHeaderFields ?? [:]
+            
+            print("[CCProxy] generate-code request:")
+            print("  URL: \(urlStr)")
+            print("  Headers: \(hdrs)")
+            print("  Status: \(statusCode)")
+            print("  Error: \(errMsg)")
+            print("  Body: \(body)")
+            
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let uploadCode = json["code"] as? String else {
-                let body = String(data: data ?? Data(), encoding: .utf8) ?? "nil"
                 DispatchQueue.main.async {
                     self.status = "error"
-                    self.message = "Upload code failed (\(statusCode)): \(body)"
+                    self.message = "Code failed (\(statusCode)) err: \(errMsg) url: \(urlStr)"
                 }
                 return
             }
@@ -267,16 +278,17 @@ class OAuthManager: NSObject, ObservableObject, URLSessionDelegate {
 // MARK: - Settings Storage
 
 class AppSettings: ObservableObject {
-    @Published var serverURL: String {
-        didSet { UserDefaults.standard.set(serverURL, forKey: "serverURL") }
-    }
-    @Published var apiKey: String {
-        didSet { UserDefaults.standard.set(apiKey, forKey: "apiKey") }
-    }
+    @Published var serverURL: String
+    @Published var apiKey: String
 
     init() {
         serverURL = UserDefaults.standard.string(forKey: "serverURL") ?? ""
         apiKey = UserDefaults.standard.string(forKey: "apiKey") ?? ""
+    }
+
+    func save() {
+        UserDefaults.standard.set(serverURL, forKey: "serverURL")
+        UserDefaults.standard.set(apiKey, forKey: "apiKey")
     }
 }
 
@@ -305,8 +317,7 @@ struct SetupView: View {
             }
 
             Button("Save") {
-                // Force a publish to trigger view update
-                settings.objectWillChange.send()
+                settings.save()
             }
             .buttonStyle(.borderedProminent)
             .disabled(settings.serverURL.trimmingCharacters(in: .whitespaces).isEmpty || settings.apiKey.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -335,7 +346,10 @@ struct MainView: View {
                     .frame(width: 10, height: 10)
                 Text(statusLabel).font(.headline)
                 Spacer()
-                Button(action: { settings.serverURL = "" }) {
+                Button(action: {
+                    settings.serverURL = ""
+                    settings.save()
+                }) {
                     Image(systemName: "gear").foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
