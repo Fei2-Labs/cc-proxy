@@ -31,7 +31,7 @@ func sha256Base64URL(_ input: String) -> String {
 
 // MARK: - OAuth Manager
 
-class OAuthManager: ObservableObject {
+class OAuthManager: NSObject, ObservableObject, URLSessionDelegate {
     @Published var status: String = "idle" // idle, listening, exchanging, uploading, success, error
     @Published var message: String = ""
     @Published var serverStatus: String = "unknown" // unknown, connected, expired, not_configured
@@ -41,10 +41,25 @@ class OAuthManager: ObservableObject {
     private var codeVerifier = ""
     private var serverFD: Int32 = -1
 
+    private lazy var session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.waitsForConnectivity = true
+        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
+    }()
+
+    // Allow any HTTPS cert (for self-signed/custom domains)
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        if let trust = challenge.protectionSpace.serverTrust {
+            completionHandler(.useCredential, URLCredential(trust: trust))
+        } else {
+            completionHandler(.performDefaultHandling, nil)
+        }
+    }
+
     func checkServerStatus() {
         guard !serverURL.isEmpty else { return }
         guard let url = URL(string: "\(serverURL)/_health") else { return }
-        URLSession.shared.dataTask(with: url) { data, _, _ in
+        self.session.dataTask(with: url) { data, _, _ in
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let oauth = json["oauth"] as? String else {
@@ -137,7 +152,7 @@ class OAuthManager: ObservableObject {
             )
             _ = withUnsafePointer(to: &addr) {
                 $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-                    bind(fd, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
+                    Darwin.bind(fd, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
                 }
             }
             listen(fd, 1)
@@ -190,7 +205,7 @@ class OAuthManager: ObservableObject {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try! JSONSerialization.data(withJSONObject: body)
 
-        URLSession.shared.dataTask(with: req) { data, _, _ in
+        self.session.dataTask(with: req) { data, _, _ in
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let refreshToken = json["refresh_token"] as? String else {
@@ -209,7 +224,7 @@ class OAuthManager: ObservableObject {
         codeReq.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if !apiKey.isEmpty { codeReq.setValue(apiKey, forHTTPHeaderField: "x-api-key") }
 
-        URLSession.shared.dataTask(with: codeReq) { data, resp, err in
+        self.session.dataTask(with: codeReq) { data, resp, err in
             let statusCode = (resp as? HTTPURLResponse)?.statusCode ?? 0
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -227,7 +242,7 @@ class OAuthManager: ObservableObject {
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
             req.httpBody = try! JSONSerialization.data(withJSONObject: ["token": token, "code": uploadCode])
 
-            URLSession.shared.dataTask(with: req) { data, _, _ in
+            self.session.dataTask(with: req) { data, _, _ in
                 let result = (try? JSONSerialization.jsonObject(with: data ?? Data()) as? [String: Any]) ?? [:]
                 let ok = result["ok"] as? Bool ?? false
                 let reinit = result["reinit"] as? String ?? ""
