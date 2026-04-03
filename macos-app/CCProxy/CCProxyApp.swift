@@ -28,6 +28,7 @@ class StatusMonitor: NSObject, ObservableObject, URLSessionDelegate, UNUserNotif
     var apiKey: String { UserDefaults.standard.string(forKey: "apiKey") ?? "" }
 
     func startPolling() {
+        guard timer == nil else { return }
         UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
         checkStatus()
@@ -204,6 +205,7 @@ struct MainView: View {
                 .buttonStyle(.plain).foregroundColor(.secondary).font(.caption)
         }
         .padding(16).frame(width: 280)
+        .onAppear { monitor.startPolling() }
     }
 }
 
@@ -221,9 +223,5 @@ struct CCProxyApp: App {
         .onChange(of: monitor.iconName) { _, _ in }
     }
 
-    init() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
-            monitor.startPolling()
-        }
-    }
+    init() {}
 }
