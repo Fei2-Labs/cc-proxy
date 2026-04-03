@@ -154,6 +154,9 @@ async function handleRequest(
   rewrittenHeaders['anthropic-beta'] = rewrittenHeaders['anthropic-beta']
     ? rewrittenHeaders['anthropic-beta'] + ',oauth-2025-04-20'
     : 'oauth-2025-04-20'
+  if (!rewrittenHeaders['anthropic-version']) {
+    rewrittenHeaders['anthropic-version'] = '2023-06-01'
+  }
 
   // Ensure billing header exists with valid fingerprint and cch attestation
   if (!rewrittenHeaders['x-anthropic-billing-header']) {
