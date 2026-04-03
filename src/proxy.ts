@@ -7,6 +7,7 @@ import type { Config } from './config.js'
 import { authenticate } from './auth.js'
 import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
+import { isOpenAIRequest, handleModelsRequest, openaiToAnthropic, anthropicToOpenai } from './openai-compat.js'
 import { audit, log } from './logger.js'
 import { logRequest, setSetting } from './db.js'
 import { checkRateLimit } from './rate-limit.js'
@@ -78,7 +79,7 @@ async function handleRequest(
   upstream: URL,
 ) {
   const method = req.method || 'GET'
-  const path = req.url || '/'
+  let path = req.url || '/'
 
   // Health check - no auth required
   if (path === '/_health') {
@@ -119,6 +120,12 @@ async function handleRequest(
     return
   }
 
+  // OpenAI-compatible /v1/models endpoint
+  if (path === '/v1/models') {
+    handleModelsRequest(res)
+    return
+  }
+
   // Get the real OAuth token (managed by gateway)
   const oauthToken = getAccessToken()
   if (!oauthToken) {
@@ -143,6 +150,21 @@ async function handleRequest(
     chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
   }
   let body = Buffer.concat(chunks)
+
+  // OpenAI Chat Completions → Anthropic Messages translation
+  const isOpenAI = path === '/v1/chat/completions'
+  let openaiModel = ''
+  if (isOpenAI && body.length > 0) {
+    try {
+      const parsed = JSON.parse(body.toString('utf-8'))
+      openaiModel = parsed.model || ''
+      const anthropicBody = openaiToAnthropic(parsed)
+      body = Buffer.from(JSON.stringify(anthropicBody), 'utf-8')
+      path = '/v1/messages'
+    } catch (err) {
+      log('error', `OpenAI translation failed: ${err}`)
+    }
+  }
 
   // Rewrite identity fields in body
   if (body.length > 0) {
@@ -282,6 +304,13 @@ async function handleRequest(
 
   // Send response to client
   delete result.headers['transfer-encoding']
+  if (isOpenAI && result.status === 200) {
+    try {
+      const anthropicRes = JSON.parse(result.body.toString('utf-8'))
+      const openaiRes = anthropicToOpenai(anthropicRes, openaiModel)
+      result.body = Buffer.from(JSON.stringify(openaiRes), 'utf-8')
+    } catch {}
+  }
   res.writeHead(result.status, result.headers)
   res.end(result.body)
 
