@@ -4,7 +4,12 @@ import { COOKIE_NAME } from '@/lib/auth'
 import { setSetting } from '../../../../../src/db'
 
 export async function POST(request: NextRequest) {
-  if (!request.cookies.get(COOKIE_NAME)?.value) {
+  // Allow from portal session OR menubar app with admin password
+  const hasSession = !!request.cookies.get(COOKIE_NAME)?.value
+  const apiKey = request.headers.get('x-api-key')
+  const validKey = apiKey && process.env.ADMIN_PASSWORD && apiKey === process.env.ADMIN_PASSWORD
+
+  if (!hasSession && !validKey) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
