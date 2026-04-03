@@ -10,6 +10,18 @@ import { rewriteBody, rewriteHeaders } from './rewriter.js'
 import { audit, log } from './logger.js'
 import { logRequest, setSetting } from './db.js'
 import { checkRateLimit } from './rate-limit.js'
+import xxhash from 'xxhash-wasm'
+
+const CCH_SEED = BigInt('0x6E52736AC806831E')
+let xxh64fn: ((input: Uint8Array, seed: bigint) => bigint) | null = null
+
+xxhash().then(h => { xxh64fn = h.h64Raw }).catch(() => {})
+
+function computeCch(body: Buffer): string {
+  if (!xxh64fn) return '00000'
+  const hash = xxh64fn(new Uint8Array(body), CCH_SEED)
+  return (hash & BigInt(0xFFFFF)).toString(16).padStart(5, '0')
+}
 
 export function createProxyHandler(config: Config) {
   const upstream = new URL(config.upstream.url)
@@ -139,7 +151,7 @@ async function handleRequest(
   // Inject the real OAuth token (replaces whatever the client sent)
   rewrittenHeaders['authorization'] = `Bearer ${oauthToken}`
 
-  // Ensure billing header exists with valid fingerprint
+  // Ensure billing header exists with valid fingerprint and cch attestation
   if (!rewrittenHeaders['x-anthropic-billing-header']) {
     let fp = '000'
     try {
@@ -157,6 +169,29 @@ async function handleRequest(
       }
     } catch {}
     rewrittenHeaders['x-anthropic-billing-header'] = `cc_version=${config.env.version}.${fp}; cc_entrypoint=cli;`
+  }
+
+  // Compute cch attestation on the final body (with cch placeholder first)
+  {
+    const billingKey = Object.keys(rewrittenHeaders).find(k => k.toLowerCase() === 'x-anthropic-billing-header') || 'x-anthropic-billing-header'
+    let billing = rewrittenHeaders[billingKey] || ''
+    // Remove existing cch, add placeholder for hash computation
+    billing = billing.replace(/\s*cch=[a-f0-9]+;?/g, '')
+    billing = billing.replace(/;\s*$/, '') + '; cch=00000;'
+    rewrittenHeaders[billingKey] = billing
+
+    // Also inject cch placeholder into body's system prompt billing header
+    const bodyStr = body.toString('utf-8')
+    const bodyWithPlaceholder = bodyStr.replace(
+      /(x-anthropic-billing-header:[^"]*?)(?:;\s*cch=[a-f0-9]+)?;?\s*(?=")/g,
+      '$1; cch=00000;'
+    )
+    const bodyBuf = Buffer.from(bodyWithPlaceholder, 'utf-8')
+    const cch = computeCch(bodyBuf)
+
+    // Replace placeholder with real cch
+    rewrittenHeaders[billingKey] = rewrittenHeaders[billingKey].replace('cch=00000', `cch=${cch}`)
+    body = Buffer.from(bodyWithPlaceholder.replace('cch=00000', `cch=${cch}`), 'utf-8')
   }
 
   // Forward to upstream

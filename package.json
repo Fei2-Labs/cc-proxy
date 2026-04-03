@@ -24,6 +24,7 @@
     "react": "latest",
     "react-dom": "latest",
     "tailwind-merge": "latest",
+    "xxhash-wasm": "^1.1.0",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
