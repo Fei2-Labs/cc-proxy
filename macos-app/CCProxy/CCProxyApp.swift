@@ -268,7 +268,7 @@ struct SetupView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: "bolt.shield")
+            Image(systemName: "shield.lefthalf.filled")
                 .font(.system(size: 40))
                 .foregroundColor(.accentColor)
 
@@ -387,7 +387,7 @@ struct CCProxyApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("CC Proxy", systemImage: "bolt.shield") {
+        MenuBarExtra("CC Proxy", systemImage: "shield.lefthalf.filled.badge.checkmark") {
             if configured {
                 MainView(configured: $configured).environmentObject(settings)
             } else {
