@@ -11,23 +11,39 @@ type OAuthStatusType = {
 
 function OAuthContent() {
   const [oauthStatus, setOauthStatus] = useState<OAuthStatusType | null>(null)
-  const [connecting, setConnecting] = useState(false)
+  const [manualToken, setManualToken] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState('')
   const searchParams = useSearchParams()
   const success = searchParams.get('success')
   const error = searchParams.get('error')
 
-  useEffect(() => {
+  const refreshStatus = () => {
     fetch('/api/oauth/status').then(r => r.ok ? r.json() : null).then(d => d && setOauthStatus(d))
-  }, [])
+  }
 
-  const handleConnect = async () => {
-    setConnecting(true)
+  useEffect(() => { refreshStatus() }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    setMsg('')
     try {
-      const res = await fetch('/api/oauth/start', { method: 'POST' })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
+      const res = await fetch('/api/oauth/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: manualToken }),
+      })
+      if (res.ok) {
+        setManualToken('')
+        setMsg('Token saved. Refreshing status...')
+        setTimeout(refreshStatus, 2000)
+      } else {
+        setMsg('Failed to save token')
+      }
     } catch {
-      setConnecting(false)
+      setMsg('Network error')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -47,7 +63,7 @@ function OAuthContent() {
 
       {success && (
         <div className="bg-green-900/20 border border-green-800 rounded-lg p-4 mb-6">
-          <p className="text-green-400 text-sm">OAuth connected successfully. The proxy is now using the new token.</p>
+          <p className="text-green-400 text-sm">OAuth connected successfully.</p>
         </div>
       )}
 
@@ -69,33 +85,43 @@ function OAuthContent() {
                 {oauthStatus?.status === 'valid' && oauthStatus.expiresAt
                   ? `Token expires ${new Date(oauthStatus.expiresAt).toLocaleString()}`
                   : oauthStatus?.status === 'not_configured'
-                  ? 'Connect to start proxying API requests'
+                  ? 'Paste a refresh token to start proxying'
                   : oauthStatus?.status === 'expired'
-                  ? 'Token expired \u2014 reconnect to refresh'
+                  ? 'Token expired — paste a new refresh token'
                   : 'Loading...'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {cfg && (
-              <span className={`px-2 py-0.5 rounded-full text-xs ${cfg.bg} ${cfg.color}`}>
-                {cfg.label}
-              </span>
-            )}
-            <button
-              onClick={handleConnect}
-              disabled={connecting}
-              className="bg-[hsl(var(--primary))] text-white rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
-            >
-              {connecting ? 'Redirecting...' : oauthStatus?.status === 'valid' ? 'Reconnect' : 'Connect'}
-            </button>
-          </div>
+          {cfg && (
+            <span className={`px-2 py-0.5 rounded-full text-xs ${cfg.bg} ${cfg.color}`}>
+              {cfg.label}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="mt-6 text-sm text-[hsl(var(--muted-foreground))]">
-        <p>This connects to Anthropic using the official Claude Code OAuth protocol.</p>
-        <p className="mt-1">The refresh token is stored securely in the local database.</p>
+      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-6 mt-4">
+        <p className="font-medium mb-1">Refresh Token</p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4">
+          Run <code className="bg-[hsl(var(--muted))] px-1.5 py-0.5 rounded text-xs">bash scripts/extract-token.sh</code> on a machine logged into Claude Code, then paste the token here.
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="password"
+            placeholder="Paste refresh token..."
+            value={manualToken}
+            onChange={(e) => setManualToken(e.target.value)}
+            className="flex-1 bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-md px-3 py-2 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] outline-none focus:ring-1 focus:ring-[hsl(var(--ring))]"
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving || !manualToken.trim()}
+            className="bg-[hsl(var(--primary))] text-white rounded-md px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+        {msg && <p className="text-sm mt-2 text-[hsl(var(--muted-foreground))]">{msg}</p>}
       </div>
     </div>
   )
