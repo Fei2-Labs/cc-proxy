@@ -199,6 +199,33 @@ export function getUsageByClient(period: 'day' | 'week' | 'month'): UsageRollup[
   `).all(since) as UsageRollup[]
 }
 
+export type ModelUsage = {
+  model: string
+  total_requests: number
+  input_tokens: number
+  output_tokens: number
+  cache_read_tokens: number
+  cache_creation_tokens: number
+  avg_latency_ms: number
+}
+
+export function getUsageByModel(period: 'day' | 'week' | 'month'): ModelUsage[] {
+  const since = period === 'day' ? '-1 day' : period === 'week' ? '-7 days' : '-30 days'
+  return getDatabase().prepare(`
+    SELECT COALESCE(model, 'unknown') as model,
+      COUNT(*) as total_requests,
+      COALESCE(SUM(input_tokens), 0) as input_tokens,
+      COALESCE(SUM(output_tokens), 0) as output_tokens,
+      COALESCE(SUM(cache_read_tokens), 0) as cache_read_tokens,
+      COALESCE(SUM(cache_creation_tokens), 0) as cache_creation_tokens,
+      CAST(AVG(latency_ms) AS INTEGER) as avg_latency_ms
+    FROM request_logs
+    WHERE created_at >= datetime('now', ?) AND path LIKE '/v1/messages%'
+    GROUP BY model
+    ORDER BY total_requests DESC
+  `).all(since) as ModelUsage[]
+}
+
 export type LogEntry = {
   id: number
   client_name: string

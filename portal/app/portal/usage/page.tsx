@@ -15,9 +15,19 @@ type UsageClient = {
 
 type RateLimits = Record<string, string | undefined>
 
+type ModelUsage = {
+  model: string
+  total_requests: number
+  input_tokens: number
+  output_tokens: number
+  avg_latency_ms: number
+  estimated_cost_usd: number
+}
+
 export default function UsagePage() {
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week')
   const [clients, setClients] = useState<UsageClient[]>([])
+  const [models, setModels] = useState<ModelUsage[]>([])
   const [limits, setLimits] = useState<RateLimits>({})
 
   const fetchUsage = async (p: string) => {
@@ -25,6 +35,7 @@ export default function UsagePage() {
     if (res.ok) {
       const data = await res.json()
       setClients(data.clients)
+      setModels(data.models || [])
     }
   }
 
@@ -100,6 +111,37 @@ export default function UsagePage() {
                 <td className="px-4 py-3 text-right font-mono text-[hsl(var(--muted-foreground))]">{fmt(c.output_tokens)}</td>
                 <td className="px-4 py-3 text-right font-mono text-[hsl(var(--muted-foreground))]">{fmt(c.avg_latency_ms)}ms</td>
                 <td className="px-4 py-3 text-right font-mono">${c.estimated_cost_usd.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Model Breakdown */}
+      <h2 className="text-lg font-bold font-mono mt-8 mb-4">By Model</h2>
+      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-[hsl(var(--border))]">
+              <th className="text-left px-4 py-3 text-[hsl(var(--muted-foreground))] font-medium">Model</th>
+              <th className="text-right px-4 py-3 text-[hsl(var(--muted-foreground))] font-medium">Requests</th>
+              <th className="text-right px-4 py-3 text-[hsl(var(--muted-foreground))] font-medium">Input</th>
+              <th className="text-right px-4 py-3 text-[hsl(var(--muted-foreground))] font-medium">Output</th>
+              <th className="text-right px-4 py-3 text-[hsl(var(--muted-foreground))] font-medium">Avg Latency</th>
+              <th className="text-right px-4 py-3 text-[hsl(var(--muted-foreground))] font-medium">Est. Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {models.length === 0 ? (
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]">No model data yet</td></tr>
+            ) : models.map(m => (
+              <tr key={m.model} className="border-b border-[hsl(var(--border))] last:border-0">
+                <td className="px-4 py-3 font-medium font-mono text-xs">{m.model}</td>
+                <td className="px-4 py-3 text-right font-mono">{fmt(m.total_requests)}</td>
+                <td className="px-4 py-3 text-right font-mono text-[hsl(var(--muted-foreground))]">{fmt(m.input_tokens)}</td>
+                <td className="px-4 py-3 text-right font-mono text-[hsl(var(--muted-foreground))]">{fmt(m.output_tokens)}</td>
+                <td className="px-4 py-3 text-right font-mono text-[hsl(var(--muted-foreground))]">{fmt(m.avg_latency_ms)}ms</td>
+                <td className="px-4 py-3 text-right font-mono">${m.estimated_cost_usd.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
