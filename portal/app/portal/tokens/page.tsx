@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Copy, Check, Plus, Trash2 } from 'lucide-react'
+import { Copy, Check, Plus, Trash2, RefreshCw } from 'lucide-react'
 
 type Token = {
   id: number
@@ -32,19 +32,29 @@ export default function TokensPage() {
   const [loading, setLoading] = useState(false)
   const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
   const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
+  const [models, setModels] = useState<{ id: string; name: string }[]>([])
+  const [modelsLoading, setModelsLoading] = useState(false)
 
-  const models = [
-    { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6' },
-    { id: 'claude-opus-4-6', name: 'Claude Opus 4.6' },
-    { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5' },
-  ]
+  const fetchModels = async (refresh = false) => {
+    setModelsLoading(true)
+    try {
+      const res = await fetch(`/api/models${refresh ? '?refresh=1' : ''}`)
+      if (res.ok) {
+        const data = await res.json()
+        setModels(data.models)
+        if (data.models.length && !data.models.find((m: any) => m.id === selectedModel)) {
+          setSelectedModel(data.models[0].id)
+        }
+      }
+    } catch {} finally { setModelsLoading(false) }
+  }
 
   const fetchTokens = async () => {
     const res = await fetch('/api/tokens')
     if (res.ok) setTokens((await res.json()).tokens)
   }
 
-  useEffect(() => { fetchTokens() }, [])
+  useEffect(() => { fetchTokens(); fetchModels() }, [])
 
   const handleCreate = async () => {
     if (!name.trim()) return
@@ -152,6 +162,14 @@ export default function TokensPage() {
         >
           {models.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
         </select>
+        <button
+          onClick={() => fetchModels(true)}
+          disabled={modelsLoading}
+          className="p-1 hover:bg-[hsl(var(--accent))] rounded text-[hsl(var(--muted-foreground))]"
+          title="Refresh models"
+        >
+          <RefreshCw size={14} className={modelsLoading ? 'animate-spin' : ''} />
+        </button>
       </div>
 
       <div className="space-y-4">
