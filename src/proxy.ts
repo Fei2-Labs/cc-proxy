@@ -309,7 +309,12 @@ async function handleRequest(
       const anthropicRes = JSON.parse(result.body.toString('utf-8'))
       const openaiRes = anthropicToOpenai(anthropicRes, openaiModel)
       result.body = Buffer.from(JSON.stringify(openaiRes), 'utf-8')
-    } catch {}
+      log('debug', `Translated Anthropic→OpenAI response for ${openaiModel}`)
+    } catch (err) {
+      log('error', `OpenAI response translation failed: ${err}`)
+    }
+  } else if (isOpenAI) {
+    log('warn', `OpenAI request but status=${result.status}, skipping translation`)
   }
   res.writeHead(result.status, result.headers)
   res.end(result.body)
