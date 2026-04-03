@@ -50,7 +50,7 @@ cat > "$APP/Contents/Info.plist" << 'EOF'
     <string>13.0</string>
     <key>NSAppTransportSecurity</key>
     <dict>
-        <key>NSAllowsLocalNetworking</key>
+        <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
 </dict>
