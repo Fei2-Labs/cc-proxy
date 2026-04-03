@@ -334,23 +334,12 @@ struct MainView: View {
             Button(action: {
                 oauth.serverURL = settings.serverURL
                 oauth.apiKey = settings.apiKey
-                oauth.startOAuth()
+                oauth.extractFromKeychain()
             }) {
-                Label("Login with Anthropic", systemImage: "globe")
+                Label("Sync Token", systemImage: "key")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .disabled(oauth.status == "listening" || oauth.status == "exchanging" || oauth.status == "uploading")
-
-            Button(action: {
-                oauth.serverURL = settings.serverURL
-                oauth.apiKey = settings.apiKey
-                oauth.extractFromKeychain()
-            }) {
-                Label("Extract from Keychain", systemImage: "key")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
             .disabled(oauth.status == "listening" || oauth.status == "exchanging" || oauth.status == "uploading")
 
             Divider()
