@@ -7,7 +7,7 @@ import type { Config } from './config.js'
 import { authenticate } from './auth.js'
 import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
-import { isOpenAIRequest, handleModelsRequest, openaiToAnthropic, anthropicToOpenai } from './openai-compat.js'
+import { isOpenAIRequest, handleModelsRequest, openaiToAnthropic, anthropicToOpenai, anthropicErrorToOpenai, translateSSEChunk } from './openai-compat.js'
 import { audit, log } from './logger.js'
 import { logRequest, setSetting } from './db.js'
 import { checkRateLimit } from './rate-limit.js'
@@ -154,10 +154,12 @@ async function handleRequest(
   // OpenAI Chat Completions → Anthropic Messages translation
   const isOpenAI = path === '/v1/chat/completions'
   let openaiModel = ''
+  let isOpenAIStream = false
   if (isOpenAI && body.length > 0) {
     try {
       const parsed = JSON.parse(body.toString('utf-8'))
       openaiModel = parsed.model || ''
+      isOpenAIStream = !!parsed.stream
       const anthropicBody = openaiToAnthropic(parsed)
       body = Buffer.from(JSON.stringify(anthropicBody), 'utf-8')
       path = '/v1/messages'
@@ -263,6 +265,94 @@ async function handleRequest(
     proxyReq.end()
   })
 
+  // Streaming path for OpenAI-compatible requests
+  if (isOpenAI && isOpenAIStream) {
+    const proxyReq = httpsRequest(upstreamUrl, {
+      method,
+      headers: { ...rewrittenHeaders, host: upstream.host, 'content-length': String(body.length) },
+    }, (proxyRes) => {
+      const status = proxyRes.statusCode || 502
+      if (status !== 200) {
+        // Buffer error response and translate
+        const errChunks: Buffer[] = []
+        proxyRes.on('data', (c: Buffer) => errChunks.push(c))
+        proxyRes.on('end', () => {
+          let errBody: any
+          try { errBody = JSON.parse(Buffer.concat(errChunks).toString('utf-8')) } catch { errBody = {} }
+          const translated = anthropicErrorToOpenai(status, errBody)
+          const buf = Buffer.from(JSON.stringify(translated), 'utf-8')
+          res.writeHead(status, { 'content-type': 'application/json', 'content-length': String(buf.length) })
+          res.end(buf)
+          logRequest({ client_name: clientName, method, path, status, latency_ms: Date.now() - startTime })
+        })
+        return
+      }
+
+      res.writeHead(200, {
+        'content-type': 'text/event-stream',
+        'cache-control': 'no-cache',
+        'connection': 'keep-alive',
+        'x-proxy-translated': 'openai-stream',
+      })
+
+      let buffer = ''
+      let streamModel = openaiModel
+      let inputTokens: number | undefined
+      let outputTokens: number | undefined
+
+      proxyRes.on('data', (chunk: Buffer) => {
+        buffer += chunk.toString('utf-8')
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || '' // keep incomplete line
+
+        let currentEvent = ''
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            currentEvent = line.slice(7).trim()
+          } else if (line.startsWith('data: ')) {
+            const raw = line.slice(6).trim()
+            if (!raw || raw === '[DONE]') continue
+            try {
+              const data = JSON.parse(raw)
+              if (data.message?.model) streamModel = data.message.model
+              if (data.usage) {
+                inputTokens = data.usage.input_tokens
+                outputTokens = data.usage.output_tokens
+              }
+              const translated = translateSSEChunk(currentEvent, data, streamModel)
+              if (translated) res.write(translated)
+            } catch {}
+          }
+        }
+      })
+
+      proxyRes.on('end', () => {
+        if (!res.writableEnded) res.end()
+        logRequest({
+          client_name: clientName, method, path, model: streamModel,
+          input_tokens: inputTokens, output_tokens: outputTokens,
+          status: 200, latency_ms: Date.now() - startTime,
+        })
+        if (config.logging.audit) audit(clientName, method, path, 200)
+      })
+    })
+
+    proxyReq.on('error', (err) => {
+      log('error', `Upstream stream error: ${err.message}`)
+      if (!res.headersSent) {
+        res.writeHead(502, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: 'Bad gateway', detail: err.message }))
+      }
+      logRequest({ client_name: clientName, method, path, status: 502, latency_ms: Date.now() - startTime })
+    })
+
+    proxyReq.write(body)
+    proxyReq.end()
+    return
+  }
+
+  // Non-streaming path (original behavior)
+
   let result: UpstreamResult
   let fallbackUsed: string | null = null
   try {
@@ -317,7 +407,12 @@ async function handleRequest(
     }
   }
   if (isOpenAI && result.status !== 200) {
-    result.headers['x-proxy-openai-skip'] = `status=${result.status}`
+    try {
+      const errBody = JSON.parse(result.body.toString('utf-8'))
+      const translated = Buffer.from(JSON.stringify(anthropicErrorToOpenai(result.status, errBody)), 'utf-8')
+      result.body = translated
+      result.headers['content-length'] = String(translated.length)
+    } catch {}
   }
   res.writeHead(result.status, result.headers)
   res.end(result.body)

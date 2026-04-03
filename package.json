@@ -12,7 +12,7 @@
     "dev:proxy": "tsx watch src/index.ts",
     "generate-token": "tsx src/scripts/generate-token.ts",
     "generate-identity": "tsx src/scripts/generate-identity.ts",
-    "test": "tsx tests/rewriter.test.ts"
+    "test": "tsx tests/rewriter.test.ts && tsx tests/openai-compat.test.ts"
   },
   "dependencies": {
     "better-sqlite3": "latest",
