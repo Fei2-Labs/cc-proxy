@@ -28,8 +28,6 @@ function CopyButton({ text }: { text: string }) {
 export default function TokensPage() {
   const [tokens, setTokens] = useState<Token[]>([])
   const [name, setName] = useState('')
-  const [newToken, setNewToken] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
@@ -50,7 +48,7 @@ export default function TokensPage() {
 
   const handleCreate = async () => {
     if (!name.trim()) return
-    setLoading(true); setError(''); setNewToken(null)
+    setLoading(true); setError('')
     try {
       const res = await fetch('/api/tokens', {
         method: 'POST',
@@ -59,7 +57,6 @@ export default function TokensPage() {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Failed'); return }
-      setNewToken(data.token)
       setSelectedToken(data.token)
       setName('')
       fetchTokens()
@@ -102,22 +99,6 @@ export default function TokensPage() {
       </div>
 
       {error && <p className="text-[hsl(var(--destructive))] text-sm mb-4">{error}</p>}
-
-      {newToken && (
-        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--primary))] rounded-lg p-4 mb-6">
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mb-2">
-            Copy this token now — it won&apos;t be shown again.
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="bg-[hsl(var(--muted))] px-3 py-1.5 rounded text-sm font-mono flex-1 break-all select-all">
-              {newToken}
-            </code>
-            <button onClick={() => { navigator.clipboard.writeText(newToken); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="p-2 hover:bg-[hsl(var(--accent))] rounded">
-              {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg overflow-hidden mb-8">
         <table className="w-full text-sm">
