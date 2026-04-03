@@ -2,11 +2,9 @@
 import type { ServerResponse } from 'http'
 
 const MODELS = [
-  'claude-sonnet-4-20250514',
-  'claude-haiku-4-20250414',
-  'claude-opus-4-20250514',
-  'claude-3.5-sonnet-20241022',
-  'claude-3.5-haiku-20241022',
+  'claude-opus-4-6',
+  'claude-sonnet-4-6',
+  'claude-haiku-4-5',
 ]
 
 export function isOpenAIRequest(path: string): boolean {
