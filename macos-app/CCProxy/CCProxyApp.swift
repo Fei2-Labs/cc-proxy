@@ -49,7 +49,7 @@ class StatusMonitor: NSObject, ObservableObject, URLSessionDelegate, UNUserNotif
                   let oauth = json["oauth"] as? String else {
                 DispatchQueue.main.async {
                     self.oauthStatus = "⚠️ Server unreachable"
-                    self.iconName = "shield.lefthalf.filled.trianglebadge.exclamationmark"
+                    self.iconName = "shield.lefthalf.filled.slash"
                 }
                 return
             }
@@ -60,7 +60,7 @@ class StatusMonitor: NSObject, ObservableObject, URLSessionDelegate, UNUserNotif
                     self.lastNotifiedExpired = false
                 } else {
                     self.oauthStatus = "⚠️ Token expired"
-                    self.iconName = "shield.lefthalf.filled.trianglebadge.exclamationmark"
+                    self.iconName = "shield.lefthalf.filled.slash"
                     if !self.lastNotifiedExpired {
                         self.lastNotifiedExpired = true
                         self.sendNotification()
