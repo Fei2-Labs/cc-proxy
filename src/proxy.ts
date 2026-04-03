@@ -23,6 +23,17 @@ function computeCch(body: Buffer): string {
   return (hash & BigInt(0xFFFFF)).toString(16).padStart(5, '0')
 }
 
+const MODEL_FALLBACKS: Record<string, string[]> = (() => {
+  const env = process.env.MODEL_FALLBACKS
+  if (env) {
+    try { return JSON.parse(env) } catch {}
+  }
+  return {
+    'claude-sonnet-4-6': ['claude-haiku-4-5-20251001'],
+    'claude-opus-4-6': ['claude-sonnet-4-6', 'claude-haiku-4-5-20251001'],
+  }
+})()
+
 export function createProxyHandler(config: Config) {
   const upstream = new URL(config.upstream.url)
   return (req: IncomingMessage, res: ServerResponse) => {
@@ -201,120 +212,105 @@ async function handleRequest(
     body = Buffer.from(bodyWithPlaceholder.replace('cch=00000', `cch=${cch}`), 'utf-8')
   }
 
-  // Forward to upstream
+  // Forward to upstream (with model fallback on 429)
   const upstreamUrl = new URL(path, upstream)
+  const isMessages = path.startsWith('/v1/messages')
 
-  const proxyReq = httpsRequest(
-    upstreamUrl,
-    {
+  let requestModel: string | undefined
+  if (isMessages) {
+    try { requestModel = JSON.parse(body.toString('utf-8')).model } catch {}
+  }
+
+  type UpstreamResult = { status: number; headers: Record<string, any>; body: Buffer }
+
+  const sendUpstream = (finalBody: Buffer): Promise<UpstreamResult> => new Promise((resolve, reject) => {
+    const proxyReq = httpsRequest(upstreamUrl, {
       method,
-      headers: {
-        ...rewrittenHeaders,
-        host: upstream.host,
-        'content-length': String(body.length),
-      },
-    },
-    (proxyRes) => {
-      const status = proxyRes.statusCode || 502
+      headers: { ...rewrittenHeaders, host: upstream.host, 'content-length': String(finalBody.length) },
+    }, (proxyRes) => {
+      const chunks: Buffer[] = []
+      proxyRes.on('data', (c: Buffer) => chunks.push(c))
+      proxyRes.on('end', () => resolve({
+        status: proxyRes.statusCode || 502,
+        headers: { ...proxyRes.headers },
+        body: Buffer.concat(chunks),
+      }))
+    })
+    proxyReq.on('error', reject)
+    proxyReq.write(finalBody)
+    proxyReq.end()
+  })
 
-      const responseHeaders = { ...proxyRes.headers }
-      delete responseHeaders['transfer-encoding']
+  let result: UpstreamResult
+  try {
+    result = await sendUpstream(body)
 
-      res.writeHead(status, responseHeaders)
-
-      const responseChunks: Buffer[] = []
-
-      proxyRes.on('data', (chunk: Buffer) => {
-        res.write(chunk)
-        responseChunks.push(chunk)
-      })
-
-      proxyRes.on('end', () => {
-        res.end()
-        const latencyMs = Date.now() - startTime
-
-        let model: string | undefined
-        let inputTokens: number | undefined
-        let outputTokens: number | undefined
-        let cacheReadTokens: number | undefined
-        let cacheCreationTokens: number | undefined
-
-        try {
-          const responseText = Buffer.concat(responseChunks).toString('utf-8')
-
-          // Try SSE format (streaming)
-          const lines = responseText.split('\n')
-          for (let i = lines.length - 1; i >= 0; i--) {
-            const line = lines[i]
-            if (line.startsWith('data: ') && line.includes('"usage"')) {
-              const data = JSON.parse(line.slice(6))
-              if (data.usage) {
-                inputTokens = data.usage.input_tokens
-                outputTokens = data.usage.output_tokens
-                cacheReadTokens = data.usage.cache_read_input_tokens
-                cacheCreationTokens = data.usage.cache_creation_input_tokens
-              }
-              if (data.model) model = data.model
-              break
-            }
-            if (line.startsWith('data: ') && line.includes('"model"') && !model) {
-              try { const d = JSON.parse(line.slice(6)); if (d.model) model = d.model } catch {}
-            }
-          }
-
-          // Try JSON format (non-streaming)
-          if (!inputTokens) {
-            try {
-              const json = JSON.parse(responseText)
-              if (json.usage) {
-                inputTokens = json.usage.input_tokens
-                outputTokens = json.usage.output_tokens
-                cacheReadTokens = json.usage.cache_read_input_tokens
-                cacheCreationTokens = json.usage.cache_creation_input_tokens
-              }
-              if (json.model) model = json.model
-            } catch {}
-          }
-        } catch {}
-
-        logRequest({
-          client_name: clientName, method, path, model,
-          input_tokens: inputTokens, output_tokens: outputTokens,
-          cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens,
-          status, latency_ms: latencyMs,
-        })
-
-        // Capture rate limit headers
-        const rlHeaders = ['x-ratelimit-limit-requests', 'x-ratelimit-limit-tokens', 'x-ratelimit-remaining-requests', 'x-ratelimit-remaining-tokens', 'x-ratelimit-reset-requests', 'x-ratelimit-reset-tokens']
-        for (const h of rlHeaders) {
-          const val = proxyRes.headers[h]
-          if (val) try { setSetting(`ratelimit_${h}`, String(val)) } catch {}
-        }
-
-        if (config.logging.audit) {
-          audit(clientName, method, path, status)
-        }
-      })
-    },
-  )
-
-  proxyReq.on('error', (err) => {
+    // On 429 rate limit, try fallback models
+    if (result.status === 429 && isMessages && requestModel) {
+      const fallbacks = MODEL_FALLBACKS[requestModel] || []
+      for (const fb of fallbacks) {
+        log('info', `Model ${requestModel} rate-limited, falling back to ${fb}`)
+        const parsed = JSON.parse(body.toString('utf-8'))
+        parsed.model = fb
+        const fbBody = Buffer.from(JSON.stringify(parsed), 'utf-8')
+        result = await sendUpstream(fbBody)
+        if (result.status !== 429) break
+      }
+    }
+  } catch (err: any) {
     log('error', `Upstream error: ${err.message}`)
     if (!res.headersSent) {
       res.writeHead(502, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ error: 'Bad gateway', detail: err.message }))
     }
-    logRequest({
-      client_name: clientName, method, path,
-      status: 502, latency_ms: Date.now() - startTime,
-    })
-    if (config.logging.audit) {
-      audit(clientName, method, path, 502)
-    }
-  })
+    logRequest({ client_name: clientName, method, path, status: 502, latency_ms: Date.now() - startTime })
+    if (config.logging.audit) audit(clientName, method, path, 502)
+    return
+  }
 
-  proxyReq.write(body)
-  proxyReq.end()
+  // Send response to client
+  delete result.headers['transfer-encoding']
+  res.writeHead(result.status, result.headers)
+  res.end(result.body)
+
+  // Log
+  const latencyMs = Date.now() - startTime
+  let model: string | undefined
+  let inputTokens: number | undefined
+  let outputTokens: number | undefined
+  let cacheReadTokens: number | undefined
+  let cacheCreationTokens: number | undefined
+
+  try {
+    const responseText = result.body.toString('utf-8')
+    const lines = responseText.split('\n')
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i]
+      if (line.startsWith('data: ') && line.includes('"usage"')) {
+        const data = JSON.parse(line.slice(6))
+        if (data.usage) { inputTokens = data.usage.input_tokens; outputTokens = data.usage.output_tokens; cacheReadTokens = data.usage.cache_read_input_tokens; cacheCreationTokens = data.usage.cache_creation_input_tokens }
+        if (data.model) model = data.model
+        break
+      }
+      if (line.startsWith('data: ') && line.includes('"model"') && !model) {
+        try { const d = JSON.parse(line.slice(6)); if (d.model) model = d.model } catch {}
+      }
+    }
+    if (!inputTokens) {
+      try {
+        const json = JSON.parse(responseText)
+        if (json.usage) { inputTokens = json.usage.input_tokens; outputTokens = json.usage.output_tokens; cacheReadTokens = json.usage.cache_read_input_tokens; cacheCreationTokens = json.usage.cache_creation_input_tokens }
+        if (json.model) model = json.model
+      } catch {}
+    }
+  } catch {}
+
+  logRequest({ client_name: clientName, method, path, model, input_tokens: inputTokens, output_tokens: outputTokens, cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens, status: result.status, latency_ms: latencyMs })
+
+  const rlHeaders = ['x-ratelimit-limit-requests', 'x-ratelimit-limit-tokens', 'x-ratelimit-remaining-requests', 'x-ratelimit-remaining-tokens', 'x-ratelimit-reset-requests', 'x-ratelimit-reset-tokens']
+  for (const h of rlHeaders) { const val = result.headers[h]; if (val) try { setSetting(`ratelimit_${h}`, String(val)) } catch {} }
+
+  if (config.logging.audit) audit(clientName, method, path, result.status)
 }
 
 /**
