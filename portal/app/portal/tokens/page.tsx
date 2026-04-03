@@ -31,6 +31,7 @@ export default function TokensPage() {
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
 
   const fetchTokens = async () => {
     const res = await fetch('/api/tokens')
@@ -51,6 +52,7 @@ export default function TokensPage() {
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Failed'); return }
       setNewToken(data.token)
+      setSelectedToken(data.token)
       setName('')
       fetchTokens()
     } catch { setError('Network error') }
@@ -124,7 +126,7 @@ export default function TokensPage() {
             {tokens.length === 0 ? (
               <tr><td colSpan={5} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]">No tokens yet</td></tr>
             ) : tokens.map(t => (
-              <tr key={t.id} className="border-b border-[hsl(var(--border))] last:border-0">
+              <tr key={t.id} onClick={() => setSelectedToken(t.prefix + '...')} className="border-b border-[hsl(var(--border))] last:border-0 cursor-pointer hover:bg-[hsl(var(--accent))]">
                 <td className="px-4 py-3 font-medium">{t.name}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
@@ -150,25 +152,28 @@ export default function TokensPage() {
       </div>
 
       <h2 className="text-lg font-bold font-mono mb-4">API Usage</h2>
+      {selectedToken !== 'YOUR_TOKEN' && (
+        <p className="text-xs text-[hsl(var(--muted-foreground))] mb-3">Using token: <code className="bg-[hsl(var(--muted))] px-1 rounded">{selectedToken.length > 20 ? selectedToken.slice(0, 20) + '...' : selectedToken}</code></p>
+      )}
 
       <div className="space-y-4">
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Client environment variables</p>
-            <CopyButton text={`export ANTHROPIC_BASE_URL="${origin}"\nexport CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"\nexport ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer YOUR_TOKEN"`} />
+            <CopyButton text={`export ANTHROPIC_BASE_URL="${origin}"\nexport CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"\nexport ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`export ANTHROPIC_BASE_URL="${origin}"
 export CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"
-export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer YOUR_TOKEN"`}</pre>
+export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`}</pre>
         </div>
 
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Send a message (curl)</p>
-            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer YOUR_TOKEN" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"claude-sonnet-4-20250514","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
+            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer ${selectedToken}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"claude-sonnet-4-20250514","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`curl -X POST ${origin}/v1/messages \\
-  -H "Authorization: Bearer YOUR_TOKEN" \\
+  -H "Authorization: Bearer ${selectedToken}" \\
   -H "Content-Type: application/json" \\
   -d '{"model":"claude-sonnet-4-20250514","max_tokens":256,
        "messages":[{"role":"user","content":"Hello"}]}'`}</pre>
@@ -177,13 +182,13 @@ export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer YOUR_TOKEN"`}</pre>
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Python (anthropic SDK)</p>
-            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="YOUR_TOKEN",\n)\n\nmessage = client.messages.create(\n    model="claude-sonnet-4-20250514",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(message.content[0].text)`} />
+            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="${selectedToken}",\n)\n\nmessage = client.messages.create(\n    model="claude-sonnet-4-20250514",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(message.content[0].text)`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`import anthropic
 
 client = anthropic.Anthropic(
     base_url="${origin}",
-    api_key="YOUR_TOKEN",
+    api_key="${selectedToken}",
 )
 
 message = client.messages.create(
