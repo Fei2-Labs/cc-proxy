@@ -271,89 +271,117 @@ async function handleRequest(
 
   // Streaming path for OpenAI-compatible requests
   if (isOpenAI && isOpenAIStream) {
-    const proxyReq = httpsRequest(upstreamUrl, {
-      method,
-      headers: { ...rewrittenHeaders, host: upstream.host, 'content-length': String(body.length) },
-    }, (proxyRes) => {
-      const status = proxyRes.statusCode || 502
-      if (status !== 200) {
-        // Buffer error response and translate (may be gzip)
-        const isGzip = proxyRes.headers['content-encoding'] === 'gzip'
-        const stream = isGzip ? proxyRes.pipe(createGunzip()) : proxyRes
-        const errChunks: Buffer[] = []
-        stream.on('data', (c: Buffer) => errChunks.push(c))
-        stream.on('end', () => {
-          let errBody: any
-          try { errBody = JSON.parse(Buffer.concat(errChunks).toString('utf-8')) } catch { errBody = {} }
-          const translated = anthropicErrorToOpenai(status, errBody)
-          const buf = Buffer.from(JSON.stringify(translated), 'utf-8')
-          res.writeHead(status, { 'content-type': 'application/json', 'content-length': String(buf.length) })
-          res.end(buf)
-          logRequest({ client_name: clientName, method, path, status, latency_ms: Date.now() - startTime })
-        })
-        return
-      }
+    const modelsToTry = [requestModel, ...(requestModel ? MODEL_FALLBACKS[requestModel] || [] : [])]
 
-      res.writeHead(200, {
-        'content-type': 'text/event-stream',
-        'cache-control': 'no-cache',
-        'connection': 'keep-alive',
-        'x-proxy-translated': 'openai-stream',
-      })
+    const tryStreamModel = (modelIndex: number, streamBody: Buffer) => {
+      const proxyReq = httpsRequest(upstreamUrl, {
+        method,
+        headers: { ...rewrittenHeaders, host: upstream.host, 'content-length': String(streamBody.length) },
+      }, (proxyRes) => {
+        const status = proxyRes.statusCode || 502
 
-      let buffer = ''
-      let streamModel = openaiModel
-      let inputTokens: number | undefined
-      let outputTokens: number | undefined
-
-      proxyRes.on('data', (chunk: Buffer) => {
-        buffer += chunk.toString('utf-8')
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || '' // keep incomplete line
-
-        let currentEvent = ''
-        for (const line of lines) {
-          if (line.startsWith('event: ')) {
-            currentEvent = line.slice(7).trim()
-          } else if (line.startsWith('data: ')) {
-            const raw = line.slice(6).trim()
-            if (!raw || raw === '[DONE]') continue
-            try {
-              const data = JSON.parse(raw)
-              if (data.message?.model) streamModel = data.message.model
-              if (data.usage) {
-                inputTokens = data.usage.input_tokens
-                outputTokens = data.usage.output_tokens
-              }
-              const translated = translateSSEChunk(currentEvent, data, streamModel)
-              if (translated) res.write(translated)
-            } catch {}
+        // On 429, try next fallback model before sending anything to client
+        if (status === 429 && modelIndex + 1 < modelsToTry.length) {
+          // Drain the error response
+          proxyRes.resume()
+          const nextModel = modelsToTry[modelIndex + 1]
+          log('info', `Stream model ${modelsToTry[modelIndex]} rate-limited, falling back to ${nextModel}`)
+          try {
+            const parsed = JSON.parse(streamBody.toString('utf-8'))
+            parsed.model = nextModel
+            const fbBody = Buffer.from(JSON.stringify(parsed), 'utf-8')
+            tryStreamModel(modelIndex + 1, fbBody)
+          } catch {
+            tryStreamModel(modelIndex + 1, streamBody)
           }
+          return
         }
-      })
 
-      proxyRes.on('end', () => {
-        if (!res.writableEnded) res.end()
-        logRequest({
-          client_name: clientName, method, path, model: streamModel,
-          input_tokens: inputTokens, output_tokens: outputTokens,
-          status: 200, latency_ms: Date.now() - startTime,
+        if (status !== 200) {
+          // Buffer error response and translate (may be gzip)
+          const isGzip = proxyRes.headers['content-encoding'] === 'gzip'
+          const stream = isGzip ? proxyRes.pipe(createGunzip()) : proxyRes
+          const errChunks: Buffer[] = []
+          stream.on('data', (c: Buffer) => errChunks.push(c))
+          stream.on('end', () => {
+            let errBody: any
+            try { errBody = JSON.parse(Buffer.concat(errChunks).toString('utf-8')) } catch { errBody = {} }
+            const translated = anthropicErrorToOpenai(status, errBody)
+            const buf = Buffer.from(JSON.stringify(translated), 'utf-8')
+            res.writeHead(status, { 'content-type': 'application/json', 'content-length': String(buf.length) })
+            res.end(buf)
+            logRequest({ client_name: clientName, method, path, status, latency_ms: Date.now() - startTime })
+          })
+          return
+        }
+
+        const fallbackUsed = modelIndex > 0 ? modelsToTry[modelIndex] : null
+        const streamHeaders: Record<string, string> = {
+          'content-type': 'text/event-stream',
+          'cache-control': 'no-cache',
+          'connection': 'keep-alive',
+          'x-proxy-translated': 'openai-stream',
+        }
+        if (fallbackUsed) streamHeaders['x-model-fallback'] = `${modelsToTry[0]} -> ${fallbackUsed}`
+        res.writeHead(200, streamHeaders)
+
+        let buffer = ''
+        let streamModel = fallbackUsed || openaiModel
+        let inputTokens: number | undefined
+        let outputTokens: number | undefined
+
+        proxyRes.on('data', (chunk: Buffer) => {
+          buffer += chunk.toString('utf-8')
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || '' // keep incomplete line
+
+          let currentEvent = ''
+          for (const line of lines) {
+            if (line.startsWith('event: ')) {
+              currentEvent = line.slice(7).trim()
+            } else if (line.startsWith('data: ')) {
+              const raw = line.slice(6).trim()
+              if (!raw || raw === '[DONE]') continue
+              try {
+                const data = JSON.parse(raw)
+                if (data.message?.model) streamModel = data.message.model
+                if (data.usage) {
+                  inputTokens = data.usage.input_tokens
+                  outputTokens = data.usage.output_tokens
+                }
+                const translated = translateSSEChunk(currentEvent, data, streamModel)
+                if (translated) res.write(translated)
+              } catch {}
+            }
+          }
         })
-        if (config.logging.audit) audit(clientName, method, path, 200)
+
+        proxyRes.on('end', () => {
+          if (!res.writableEnded) res.end()
+          logRequest({
+            client_name: clientName, method, path, model: streamModel,
+            input_tokens: inputTokens, output_tokens: outputTokens,
+            status: 200, latency_ms: Date.now() - startTime,
+          })
+          if (fallbackUsed) log('info', `Stream fallback: ${modelsToTry[0]} -> ${fallbackUsed} for ${clientName}`)
+          if (config.logging.audit) audit(clientName, method, path, 200)
+        })
       })
-    })
 
-    proxyReq.on('error', (err) => {
-      log('error', `Upstream stream error: ${err.message}`)
-      if (!res.headersSent) {
-        res.writeHead(502, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify({ error: 'Bad gateway', detail: err.message }))
-      }
-      logRequest({ client_name: clientName, method, path, status: 502, latency_ms: Date.now() - startTime })
-    })
+      proxyReq.on('error', (err) => {
+        log('error', `Upstream stream error: ${err.message}`)
+        if (!res.headersSent) {
+          res.writeHead(502, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Bad gateway', detail: err.message }))
+        }
+        logRequest({ client_name: clientName, method, path, status: 502, latency_ms: Date.now() - startTime })
+      })
 
-    proxyReq.write(body)
-    proxyReq.end()
+      proxyReq.write(streamBody)
+      proxyReq.end()
+    }
+
+    tryStreamModel(0, body)
     return
   }
 
