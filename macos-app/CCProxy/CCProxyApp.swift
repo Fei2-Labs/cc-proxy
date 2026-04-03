@@ -346,6 +346,14 @@ struct MainView: View {
             }
             .buttonStyle(.bordered)
             .disabled(oauth.status == "listening" || oauth.status == "exchanging" || oauth.status == "uploading")
+
+            Divider()
+
+            Button(action: { NSApp.terminate(nil) }) {
+                Label("Quit", systemImage: "xmark.circle")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
         }
         .padding(24)
         .frame(width: 320)
