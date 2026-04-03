@@ -178,9 +178,10 @@ export default function TokensPage() {
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Client environment variables</p>
-            <CopyButton text={`export ANTHROPIC_BASE_URL="${origin}"\nexport CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"\nexport ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`} />
+            <CopyButton text={`export ANTHROPIC_BASE_URL="${origin}"\nexport ANTHROPIC_MODEL="${selectedModel}"\nexport CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"\nexport ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`export ANTHROPIC_BASE_URL="${origin}"
+export ANTHROPIC_MODEL="${selectedModel}"
 export CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"
 export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`}</pre>
         </div>
