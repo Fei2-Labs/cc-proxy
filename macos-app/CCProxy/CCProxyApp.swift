@@ -2,52 +2,21 @@ import SwiftUI
 import CryptoKit
 import Foundation
 
-// MARK: - Constants
+// MARK: - Config
 
-let CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
-let AUTHORIZE_URL = "https://platform.claude.com/v1/oauth/authorize"
-let TOKEN_URL = "https://platform.claude.com/v1/oauth/token"
-let SCOPES = "user:inference user:profile user:sessions:claude_code user:mcp_servers user:file_upload"
-let LISTEN_PORT: UInt16 = 18943
-
-// MARK: - PKCE
-
-func randomBase64URL(_ count: Int) -> String {
-    var bytes = [UInt8](repeating: 0, count: count)
-    _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
-    return Data(bytes).base64EncodedString()
-        .replacingOccurrences(of: "+", with: "-")
-        .replacingOccurrences(of: "/", with: "_")
-        .replacingOccurrences(of: "=", with: "")
-}
-
-func sha256Base64URL(_ input: String) -> String {
-    let hash = SHA256.hash(data: Data(input.utf8))
-    return Data(hash).base64EncodedString()
-        .replacingOccurrences(of: "+", with: "-")
-        .replacingOccurrences(of: "/", with: "_")
-        .replacingOccurrences(of: "=", with: "")
-}
+let DEFAULT_SERVER = "https://cc.swedexpress.store"
 
 // MARK: - OAuth Manager
 
 class OAuthManager: NSObject, ObservableObject, URLSessionDelegate {
-    @Published var status: String = "idle" // idle, listening, exchanging, uploading, success, error
+    @Published var status: String = "idle"
     @Published var message: String = ""
-    @Published var serverStatus: String = "unknown" // unknown, connected, expired, not_configured
-
-    var serverURL: String = ""
-    var apiKey: String = ""
-    private var codeVerifier = ""
-    private var serverFD: Int32 = -1
+    @Published var serverStatus: String = "checking..."
 
     private lazy var session: URLSession = {
-        let config = URLSessionConfiguration.default
-        config.waitsForConnectivity = true
-        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
+        URLSession(configuration: .default, delegate: self, delegateQueue: nil)
     }()
 
-    // Allow any HTTPS cert (for self-signed/custom domains)
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         if let trust = challenge.protectionSpace.serverTrust {
             completionHandler(.useCredential, URLCredential(trust: trust))
@@ -56,50 +25,34 @@ class OAuthManager: NSObject, ObservableObject, URLSessionDelegate {
         }
     }
 
-    func checkServerStatus() {
-        guard !serverURL.isEmpty else { return }
+    var serverURL: String {
+        UserDefaults.standard.string(forKey: "serverURL") ?? DEFAULT_SERVER
+    }
+    var apiKey: String {
+        UserDefaults.standard.string(forKey: "apiKey") ?? ""
+    }
+
+    func checkStatus() {
         guard let url = URL(string: "\(serverURL)/_health") else { return }
-        self.session.dataTask(with: url) { data, _, _ in
+        session.dataTask(with: url) { data, _, _ in
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let oauth = json["oauth"] as? String else {
-                DispatchQueue.main.async { self.serverStatus = "unknown" }
+                DispatchQueue.main.async { self.serverStatus = "unreachable" }
                 return
             }
             DispatchQueue.main.async {
-                self.serverStatus = oauth == "valid" ? "connected" : "expired"
+                self.serverStatus = oauth == "valid" ? "✅ Connected" : "⚠️ Token expired"
             }
         }.resume()
     }
 
-    func startOAuth() {
-        codeVerifier = randomBase64URL(32)
-        let codeChallenge = sha256Base64URL(codeVerifier)
-        let redirectURI = "http://127.0.0.1:\(LISTEN_PORT)/callback"
-
-        var components = URLComponents(string: AUTHORIZE_URL)!
-        components.queryItems = [
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "client_id", value: CLIENT_ID),
-            URLQueryItem(name: "redirect_uri", value: redirectURI),
-            URLQueryItem(name: "scope", value: SCOPES),
-            URLQueryItem(name: "code_challenge", value: codeChallenge),
-            URLQueryItem(name: "code_challenge_method", value: "S256"),
-            URLQueryItem(name: "state", value: randomBase64URL(16)),
-        ]
-
-        status = "listening"
-        message = "Waiting for browser login..."
-
-        startLocalServer(redirectURI: redirectURI)
-        NSWorkspace.shared.open(components.url!)
-    }
-
-    func extractFromKeychain() {
-        status = "exchanging"
+    func syncToken() {
+        status = "working"
         message = "Reading Keychain..."
 
         DispatchQueue.global().async {
+            // Extract token
             let task = Process()
             task.executableURL = URL(fileURLWithPath: "/usr/bin/security")
             task.arguments = ["find-generic-password", "-a", NSUserName(), "-s", "Claude Code-credentials", "-w"]
@@ -127,237 +80,97 @@ class OAuthManager: NSObject, ObservableObject, URLSessionDelegate {
                   let token = oauth["refreshToken"] as? String else {
                 DispatchQueue.main.async {
                     self.status = "error"
-                    self.message = "No credentials found. Run 'claude' in Terminal first."
+                    self.message = "No credentials found. Run 'claude' first."
                 }
                 return
             }
 
-            self.uploadToken(token)
-        }
-    }
+            DispatchQueue.main.async { self.message = "Uploading..." }
 
-    private func startLocalServer(redirectURI: String) {
-        DispatchQueue.global().async {
-            let fd = socket(AF_INET, SOCK_STREAM, 0)
-            self.serverFD = fd
-            var opt: Int32 = 1
-            setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, socklen_t(MemoryLayout<Int32>.size))
+            // Get upload code
+            var codeReq = URLRequest(url: URL(string: "\(self.serverURL)/api/oauth/generate-code")!)
+            codeReq.httpMethod = "POST"
+            codeReq.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            codeReq.setValue(self.apiKey, forHTTPHeaderField: "x-api-key")
 
-            var addr = sockaddr_in(
-                sin_len: UInt8(MemoryLayout<sockaddr_in>.size),
-                sin_family: sa_family_t(AF_INET),
-                sin_port: LISTEN_PORT.bigEndian,
-                sin_addr: in_addr(s_addr: UInt32(0x7f000001).bigEndian),
-                sin_zero: (0,0,0,0,0,0,0,0)
-            )
-            _ = withUnsafePointer(to: &addr) {
-                $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-                    Darwin.bind(fd, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
+            self.session.dataTask(with: codeReq) { data, resp, err in
+                let sc = (resp as? HTTPURLResponse)?.statusCode ?? 0
+                guard let data = data,
+                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let code = json["code"] as? String else {
+                    let e = err?.localizedDescription ?? "status \(sc)"
+                    DispatchQueue.main.async { self.status = "error"; self.message = "Server error: \(e)" }
+                    return
                 }
-            }
-            listen(fd, 1)
 
-            let clientFD = Darwin.accept(fd, nil, nil)
-            var buf = [UInt8](repeating: 0, count: 4096)
-            let n = Darwin.read(clientFD, &buf, buf.count)
-            let request = n > 0 ? String(bytes: buf[..<n], encoding: .utf8) ?? "" : ""
+                // Upload token
+                var req = URLRequest(url: URL(string: "\(self.serverURL)/api/oauth/upload")!)
+                req.httpMethod = "POST"
+                req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                req.httpBody = try! JSONSerialization.data(withJSONObject: ["token": token, "code": code])
 
-            // Extract code
-            var code: String?
-            if let urlStr = request.split(separator: " ").dropFirst().first,
-               let comps = URLComponents(string: String(urlStr)) {
-                code = comps.queryItems?.first(where: { $0.name == "code" })?.value
-            }
-
-            let html: String
-            if code != nil {
-                html = "<html><body style='font-family:system-ui;text-align:center;padding:60px;background:#111;color:#fff'><h2>✅ Success! You can close this tab.</h2></body></html>"
-            } else {
-                html = "<html><body style='font-family:system-ui;text-align:center;padding:60px;background:#111;color:#fff'><h2>❌ Login failed</h2></body></html>"
-            }
-            let resp = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: \(html.utf8.count)\r\nConnection: close\r\n\r\n\(html)"
-            _ = resp.withCString { Darwin.write(clientFD, $0, strlen($0)) }
-            Darwin.close(clientFD)
-            Darwin.close(fd)
-
-            guard let authCode = code else {
-                DispatchQueue.main.async { self.status = "error"; self.message = "No authorization code received" }
-                return
-            }
-
-            self.exchangeCode(authCode, redirectURI: redirectURI)
-        }
-    }
-
-    private func exchangeCode(_ code: String, redirectURI: String) {
-        DispatchQueue.main.async { self.status = "exchanging"; self.message = "Exchanging token..." }
-
-        let body: [String: String] = [
-            "grant_type": "authorization_code",
-            "code": code,
-            "code_verifier": codeVerifier,
-            "client_id": CLIENT_ID,
-            "redirect_uri": redirectURI,
-        ]
-
-        var req = URLRequest(url: URL(string: TOKEN_URL)!)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.httpBody = try! JSONSerialization.data(withJSONObject: body)
-
-        self.session.dataTask(with: req) { data, _, _ in
-            guard let data = data,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let refreshToken = json["refresh_token"] as? String else {
-                DispatchQueue.main.async { self.status = "error"; self.message = "Token exchange failed" }
-                return
-            }
-            self.uploadToken(refreshToken)
-        }.resume()
-    }
-
-    private func uploadToken(_ token: String) {
-        DispatchQueue.main.async { self.status = "uploading"; self.message = "Uploading to server..." }
-
-        var codeReq = URLRequest(url: URL(string: "\(serverURL)/api/oauth/generate-code")!)
-        codeReq.httpMethod = "POST"
-        codeReq.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !apiKey.isEmpty { codeReq.setValue(apiKey, forHTTPHeaderField: "x-api-key") }
-
-        self.session.dataTask(with: codeReq) { data, resp, err in
-            let statusCode = (resp as? HTTPURLResponse)?.statusCode ?? 0
-            let body = String(data: data ?? Data(), encoding: .utf8) ?? "nil"
-            let errMsg = err?.localizedDescription ?? "none"
-            let urlStr = codeReq.url?.absoluteString ?? "nil"
-            let hdrs = codeReq.allHTTPHeaderFields ?? [:]
-            
-            print("[CCProxy] generate-code request:")
-            print("  URL: \(urlStr)")
-            print("  Headers: \(hdrs)")
-            print("  Status: \(statusCode)")
-            print("  Error: \(errMsg)")
-            print("  Body: \(body)")
-            
-            guard let data = data,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let uploadCode = json["code"] as? String else {
-                DispatchQueue.main.async {
-                    self.status = "error"
-                    self.message = "Code failed (\(statusCode)) err: \(errMsg) url: \(urlStr)"
-                }
-                return
-            }
-
-            var req = URLRequest(url: URL(string: "\(self.serverURL)/api/oauth/upload")!)
-            req.httpMethod = "POST"
-            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            req.httpBody = try! JSONSerialization.data(withJSONObject: ["token": token, "code": uploadCode])
-
-            self.session.dataTask(with: req) { data, _, _ in
-                let result = (try? JSONSerialization.jsonObject(with: data ?? Data()) as? [String: Any]) ?? [:]
-                let ok = result["ok"] as? Bool ?? false
-                let reinit = result["reinit"] as? String ?? ""
-                DispatchQueue.main.async {
-                    if ok && reinit == "success" {
-                        self.status = "success"
-                        self.message = "Connected!"
-                        self.serverStatus = "connected"
-                    } else if ok {
-                        self.status = "error"
-                        self.message = "Token saved but refresh failed. Run 'claude' to login fresh."
-                    } else {
-                        self.status = "error"
-                        self.message = "Upload failed"
+                self.session.dataTask(with: req) { data, _, _ in
+                    let result = (try? JSONSerialization.jsonObject(with: data ?? Data()) as? [String: Any]) ?? [:]
+                    let ok = result["ok"] as? Bool ?? false
+                    DispatchQueue.main.async {
+                        if ok {
+                            self.status = "success"
+                            self.message = "Token synced!"
+                            self.checkStatus()
+                        } else {
+                            self.status = "error"
+                            self.message = "Upload failed. Run 'claude' to refresh login."
+                        }
                     }
-                }
+                }.resume()
             }.resume()
-        }.resume()
-    }
-}
-
-// MARK: - Settings Storage
-
-class AppSettings: ObservableObject {
-    @Published var serverURL: String
-    @Published var apiKey: String
-    @Published var configured: Bool
-
-    init() {
-        let url = UserDefaults.standard.string(forKey: "serverURL") ?? "https://cc.swedexpress.store"
-        let key = UserDefaults.standard.string(forKey: "apiKey") ?? ""
-        serverURL = url
-        apiKey = key
-        configured = !url.isEmpty && !key.isEmpty
-    }
-
-    func save() {
-        UserDefaults.standard.set(serverURL, forKey: "serverURL")
-        UserDefaults.standard.set(apiKey, forKey: "apiKey")
-        configured = !serverURL.isEmpty && !apiKey.isEmpty
-    }
-
-    func reset() {
-        configured = false
-    }
-}
-
-// MARK: - Views
-
-struct SetupView: View {
-    @EnvironmentObject var settings: AppSettings
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "shield.lefthalf.filled")
-                .font(.system(size: 40))
-                .foregroundColor(.accentColor)
-
-            Text("CC Proxy").font(.title2).bold()
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Server URL").font(.caption).foregroundColor(.secondary)
-                TextField("https://cc.swedexpress.store", text: $settings.serverURL)
-                    .textFieldStyle(.roundedBorder)
-
-                Text("Server Key").font(.caption).foregroundColor(.secondary)
-                SecureField("Same as ADMIN_PASSWORD on server", text: $settings.apiKey)
-                    .textFieldStyle(.roundedBorder)
-            }
-
-            Button("Save") {
-                settings.save()
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(settings.serverURL.trimmingCharacters(in: .whitespaces).isEmpty || settings.apiKey.trimmingCharacters(in: .whitespaces).isEmpty)
-
-            Button("Quit") { NSApp.terminate(nil) }
-                .buttonStyle(.plain)
-                .foregroundColor(.secondary)
-                .font(.caption)
         }
-        .padding(24)
-        .frame(width: 320)
     }
 }
+
+// MARK: - View
 
 struct MainView: View {
-    @EnvironmentObject var settings: AppSettings
     @StateObject var oauth = OAuthManager()
+    @State var serverURL: String = UserDefaults.standard.string(forKey: "serverURL") ?? DEFAULT_SERVER
+    @State var apiKey: String = UserDefaults.standard.string(forKey: "apiKey") ?? ""
+    @State var showSettings = false
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Status
+        VStack(spacing: 12) {
             HStack {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 10, height: 10)
-                Text(statusLabel).font(.headline)
+                Text("CC Proxy").font(.headline)
                 Spacer()
-                Button(action: { settings.reset() }) {
+                Button(action: { showSettings.toggle() }) {
                     Image(systemName: "gear").foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
+                }.buttonStyle(.plain)
             }
+
+            if showSettings {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Server").font(.caption).foregroundColor(.secondary)
+                    TextField("URL", text: $serverURL)
+                        .textFieldStyle(.roundedBorder).font(.caption)
+                    Text("Key").font(.caption).foregroundColor(.secondary)
+                    SecureField("ADMIN_PASSWORD", text: $apiKey)
+                        .textFieldStyle(.roundedBorder).font(.caption)
+                    Button("Save") {
+                        UserDefaults.standard.set(serverURL, forKey: "serverURL")
+                        UserDefaults.standard.set(apiKey, forKey: "apiKey")
+                        showSettings = false
+                        oauth.checkStatus()
+                    }
+                    .buttonStyle(.borderedProminent).font(.caption)
+                    .disabled(serverURL.isEmpty || apiKey.isEmpty)
+                }
+            }
+
+            Divider()
+
+            Text(oauth.serverStatus)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             if !oauth.message.isEmpty {
                 Text(oauth.message)
@@ -366,51 +179,21 @@ struct MainView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            Divider()
-
-            // Actions
-            Button(action: {
-                oauth.serverURL = settings.serverURL
-                oauth.apiKey = settings.apiKey
-                oauth.extractFromKeychain()
-            }) {
-                Label("Sync Token", systemImage: "key")
+            Button(action: { oauth.syncToken() }) {
+                Label("Sync Token", systemImage: "arrow.triangle.2.circlepath")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .disabled(oauth.status == "exchanging" || oauth.status == "uploading")
+            .disabled(oauth.status == "working")
 
-            Divider()
-
-            Button(action: { NSApp.terminate(nil) }) {
-                Label("Quit", systemImage: "xmark.circle")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
+            Button("Quit") { NSApp.terminate(nil) }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+                .font(.caption)
         }
-        .padding(24)
-        .frame(width: 320)
-        .onAppear {
-            oauth.serverURL = settings.serverURL
-            oauth.apiKey = settings.apiKey
-            oauth.checkServerStatus()
-        }
-    }
-
-    var statusColor: Color {
-        switch oauth.serverStatus {
-        case "connected": return .green
-        case "expired": return .yellow
-        default: return .gray
-        }
-    }
-
-    var statusLabel: String {
-        switch oauth.serverStatus {
-        case "connected": return "Connected"
-        case "expired": return "Token Expired"
-        default: return "Not Connected"
-        }
+        .padding(16)
+        .frame(width: 280)
+        .onAppear { oauth.checkStatus() }
     }
 }
 
@@ -418,15 +201,9 @@ struct MainView: View {
 
 @main
 struct CCProxyApp: App {
-    @StateObject var settings = AppSettings()
-
     var body: some Scene {
         MenuBarExtra("CC Proxy", systemImage: "shield.lefthalf.filled.badge.checkmark") {
-            if settings.configured {
-                MainView().environmentObject(settings)
-            } else {
-                SetupView().environmentObject(settings)
-            }
+            MainView()
         }
         .menuBarExtraStyle(.window)
     }
