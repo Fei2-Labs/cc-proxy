@@ -209,11 +209,16 @@ class OAuthManager: ObservableObject {
         codeReq.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if !apiKey.isEmpty { codeReq.setValue(apiKey, forHTTPHeaderField: "x-api-key") }
 
-        URLSession.shared.dataTask(with: codeReq) { data, _, _ in
+        URLSession.shared.dataTask(with: codeReq) { data, resp, err in
+            let statusCode = (resp as? HTTPURLResponse)?.statusCode ?? 0
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let uploadCode = json["code"] as? String else {
-                DispatchQueue.main.async { self.status = "error"; self.message = "Failed to get upload code" }
+                let body = String(data: data ?? Data(), encoding: .utf8) ?? "nil"
+                DispatchQueue.main.async {
+                    self.status = "error"
+                    self.message = "Upload code failed (\(statusCode)): \(body)"
+                }
                 return
             }
 
@@ -340,7 +345,7 @@ struct MainView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .disabled(oauth.status == "listening" || oauth.status == "exchanging" || oauth.status == "uploading")
+            .disabled(oauth.status == "exchanging" || oauth.status == "uploading")
 
             Divider()
 
