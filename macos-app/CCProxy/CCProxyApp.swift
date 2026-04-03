@@ -280,15 +280,24 @@ class OAuthManager: NSObject, ObservableObject, URLSessionDelegate {
 class AppSettings: ObservableObject {
     @Published var serverURL: String
     @Published var apiKey: String
+    @Published var configured: Bool
 
     init() {
-        serverURL = UserDefaults.standard.string(forKey: "serverURL") ?? ""
-        apiKey = UserDefaults.standard.string(forKey: "apiKey") ?? ""
+        let url = UserDefaults.standard.string(forKey: "serverURL") ?? "https://cc.swedexpress.store"
+        let key = UserDefaults.standard.string(forKey: "apiKey") ?? ""
+        serverURL = url
+        apiKey = key
+        configured = !url.isEmpty && !key.isEmpty
     }
 
     func save() {
         UserDefaults.standard.set(serverURL, forKey: "serverURL")
         UserDefaults.standard.set(apiKey, forKey: "apiKey")
+        configured = !serverURL.isEmpty && !apiKey.isEmpty
+    }
+
+    func reset() {
+        configured = false
     }
 }
 
@@ -296,7 +305,6 @@ class AppSettings: ObservableObject {
 
 struct SetupView: View {
     @EnvironmentObject var settings: AppSettings
-    @Binding var configured: Bool
 
     var body: some View {
         VStack(spacing: 16) {
@@ -335,7 +343,6 @@ struct SetupView: View {
 struct MainView: View {
     @EnvironmentObject var settings: AppSettings
     @StateObject var oauth = OAuthManager()
-    @Binding var configured: Bool
 
     var body: some View {
         VStack(spacing: 16) {
@@ -346,10 +353,7 @@ struct MainView: View {
                     .frame(width: 10, height: 10)
                 Text(statusLabel).font(.headline)
                 Spacer()
-                Button(action: {
-                    settings.serverURL = ""
-                    settings.save()
-                }) {
+                Button(action: { settings.reset() }) {
                     Image(systemName: "gear").foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -415,14 +419,13 @@ struct MainView: View {
 @main
 struct CCProxyApp: App {
     @StateObject var settings = AppSettings()
-    @State var configured: Bool = false
 
     var body: some Scene {
         MenuBarExtra("CC Proxy", systemImage: "shield.lefthalf.filled.badge.checkmark") {
-            if settings.serverURL.isEmpty || settings.apiKey.isEmpty {
-                SetupView(configured: $configured).environmentObject(settings)
+            if settings.configured {
+                MainView().environmentObject(settings)
             } else {
-                MainView(configured: $configured).environmentObject(settings)
+                SetupView().environmentObject(settings)
             }
         }
         .menuBarExtraStyle(.window)
