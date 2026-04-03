@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Copy, Check, Plus, Trash2, RefreshCw } from 'lucide-react'
+import { Copy, Check, Plus, Trash2 } from 'lucide-react'
 
 type Token = {
   id: number
@@ -32,30 +32,13 @@ export default function TokensPage() {
   const [loading, setLoading] = useState(false)
   const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
   const [selectedTokenName, setSelectedTokenName] = useState('')
-  const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
-  const [models, setModels] = useState<{ id: string; name: string }[]>([])
-  const [modelsLoading, setModelsLoading] = useState(false)
-
-  const fetchModels = async (refresh = false) => {
-    setModelsLoading(true)
-    try {
-      const res = await fetch(`/api/models${refresh ? '?refresh=1' : ''}`)
-      if (res.ok) {
-        const data = await res.json()
-        setModels(data.models)
-        if (data.models.length && !data.models.find((m: any) => m.id === selectedModel)) {
-          setSelectedModel(data.models[0].id)
-        }
-      }
-    } catch {} finally { setModelsLoading(false) }
-  }
 
   const fetchTokens = async () => {
     const res = await fetch('/api/tokens')
     if (res.ok) setTokens((await res.json()).tokens)
   }
 
-  useEffect(() => { fetchTokens(); fetchModels() }, [])
+  useEffect(() => { fetchTokens() }, [])
 
   const handleCreate = async () => {
     if (!name.trim()) return
@@ -152,70 +135,32 @@ export default function TokensPage() {
         </table>
       </div>
 
-      <h2 className="text-lg font-bold font-mono mb-4">API Usage</h2>
+      <h2 className="text-lg font-bold font-mono mb-4">Setup</h2>
       <div className="flex items-center gap-4 mb-4">
         {selectedTokenName && (
           <p className="text-xs text-[hsl(var(--muted-foreground))]">Token: <code className="bg-[hsl(var(--muted))] px-1 rounded">{selectedTokenName}</code></p>
         )}
-        <select
-          value={selectedModel}
-          onChange={e => setSelectedModel(e.target.value)}
-          className="bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-md px-2 py-1 text-xs"
-        >
-          {models.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-        </select>
-        <button
-          onClick={() => fetchModels(true)}
-          disabled={modelsLoading}
-          className="p-1 hover:bg-[hsl(var(--accent))] rounded text-[hsl(var(--muted-foreground))]"
-          title="Refresh models"
-        >
-          <RefreshCw size={14} className={modelsLoading ? 'animate-spin' : ''} />
-        </button>
       </div>
 
-      <div className="space-y-4" key={selectedToken + selectedModel}>
+      <div className="space-y-4" key={selectedToken}>
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium">Client environment variables</p>
-            <CopyButton text={`export ANTHROPIC_BASE_URL="${origin}"\nexport ANTHROPIC_MODEL="${selectedModel}"\nexport CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"\nexport ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`} />
+            <p className="text-sm font-medium">Claude Code setup</p>
+            <CopyButton text={`export ANTHROPIC_BASE_URL="${origin}"\nexport CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"\nexport ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`} />
           </div>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-3">Add to your shell profile (~/.zshrc or ~/.bashrc), then run <code className="bg-[hsl(var(--muted))] px-1 rounded">claude</code> normally.</p>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`export ANTHROPIC_BASE_URL="${origin}"
-export ANTHROPIC_MODEL="${selectedModel}"
 export CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"
 export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`}</pre>
         </div>
 
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium">Send a message (curl)</p>
-            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer ${selectedToken}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"${selectedModel}","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
+            <p className="text-sm font-medium">Quick test</p>
+            <CopyButton text={`claude -p "Hello"`} />
           </div>
-          <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`curl -X POST ${origin}/v1/messages \\
-  -H "Authorization: Bearer ${selectedToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{"model":"${selectedModel}","max_tokens":256,
-       "messages":[{"role":"user","content":"Hello"}]}'`}</pre>
-        </div>
-
-        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium">Python (anthropic SDK)</p>
-            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="${selectedToken}",\n)\n\nmessage = client.messages.create(\n    model="${selectedModel}",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(message.content[0].text)`} />
-          </div>
-          <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`import anthropic
-
-client = anthropic.Anthropic(
-    base_url="${origin}",
-    api_key="${selectedToken}",
-)
-
-message = client.messages.create(
-    model="${selectedModel}",
-    max_tokens=256,
-    messages=[{"role": "user", "content": "Hello"}],
-)
-print(message.content[0].text)`}</pre>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-3">After setting the env vars, verify it works:</p>
+          <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`claude -p "Hello"`}</pre>
         </div>
       </div>
     </div>
