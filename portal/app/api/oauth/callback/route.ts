@@ -3,6 +3,8 @@ import { request as httpsRequest } from 'https'
 import { setSetting } from '../../../../../src/db'
 import { TOKEN_URL, CLIENT_ID } from '../../../../../src/oauth-constants'
 
+const base = process.env.PORTAL_URL || 'http://localhost:3000'
+
 function exchangeCode(code: string, codeVerifier: string, redirectUri: string): Promise<{ access_token: string; refresh_token: string; expires_in: number }> {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
@@ -45,17 +47,17 @@ export async function GET(request: NextRequest) {
   const error = request.nextUrl.searchParams.get('error')
 
   if (error) {
-    return NextResponse.redirect(new URL(`/portal/oauth?error=${encodeURIComponent(error)}`, request.url))
+    return NextResponse.redirect(new URL(`/portal/oauth?error=${encodeURIComponent(error)}`, base))
   }
   if (!code) {
-    return NextResponse.redirect(new URL('/portal/oauth?error=no_code', request.url))
+    return NextResponse.redirect(new URL('/portal/oauth?error=no_code', base))
   }
 
   const codeVerifier = request.cookies.get('oauth_verifier')?.value
   const redirectUri = request.cookies.get('oauth_redirect_uri')?.value
 
   if (!codeVerifier || !redirectUri) {
-    return NextResponse.redirect(new URL('/portal/oauth?error=session_expired', request.url))
+    return NextResponse.redirect(new URL('/portal/oauth?error=session_expired', base))
   }
 
   try {
@@ -68,12 +70,12 @@ export async function GET(request: NextRequest) {
     } catch {
       // Proxy will pick up the token on next refresh cycle
     }
-    const response = NextResponse.redirect(new URL('/portal/oauth?success=true', request.url))
+    const response = NextResponse.redirect(new URL('/portal/oauth?success=true', base))
     response.cookies.set({ name: 'oauth_verifier', value: '', maxAge: 0, path: '/' })
     response.cookies.set({ name: 'oauth_redirect_uri', value: '', maxAge: 0, path: '/' })
     return response
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
-    return NextResponse.redirect(new URL(`/portal/oauth?error=${encodeURIComponent(msg)}`, request.url))
+    return NextResponse.redirect(new URL(`/portal/oauth?error=${encodeURIComponent(msg)}`, base))
   }
 }

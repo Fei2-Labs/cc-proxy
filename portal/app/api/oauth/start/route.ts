@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   const codeVerifier = randomBytes(32).toString('base64url')
   const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url')
 
-  const origin = request.headers.get('origin') || request.nextUrl.origin
+  const origin = process.env.PORTAL_URL || request.headers.get('origin') || request.nextUrl.origin
   const redirectUri = `${origin}/api/oauth/callback`
 
   const params = new URLSearchParams({
