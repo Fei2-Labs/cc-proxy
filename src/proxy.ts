@@ -2,6 +2,7 @@ import { createServer as createHttpsServer, type ServerOptions } from 'https'
 import { createServer as createHttpServer, type IncomingMessage, type ServerResponse } from 'http'
 import { readFileSync } from 'fs'
 import { request as httpsRequest } from 'https'
+import { createGunzip } from 'zlib'
 import { URL } from 'url'
 import type { Config } from './config.js'
 import { authenticate } from './auth.js'
@@ -252,13 +253,16 @@ async function handleRequest(
       method,
       headers: { ...rewrittenHeaders, host: upstream.host, 'content-length': String(finalBody.length) },
     }, (proxyRes) => {
+      const isGzip = proxyRes.headers['content-encoding'] === 'gzip'
+      const stream = isGzip ? proxyRes.pipe(createGunzip()) : proxyRes
       const chunks: Buffer[] = []
-      proxyRes.on('data', (c: Buffer) => chunks.push(c))
-      proxyRes.on('end', () => resolve({
-        status: proxyRes.statusCode || 502,
-        headers: { ...proxyRes.headers },
-        body: Buffer.concat(chunks),
-      }))
+      stream.on('data', (c: Buffer) => chunks.push(c))
+      stream.on('end', () => {
+        const headers = { ...proxyRes.headers }
+        if (isGzip) { delete headers['content-encoding']; delete headers['content-length'] }
+        resolve({ status: proxyRes.statusCode || 502, headers, body: Buffer.concat(chunks) })
+      })
+      stream.on('error', reject)
     })
     proxyReq.on('error', reject)
     proxyReq.write(finalBody)
@@ -273,10 +277,12 @@ async function handleRequest(
     }, (proxyRes) => {
       const status = proxyRes.statusCode || 502
       if (status !== 200) {
-        // Buffer error response and translate
+        // Buffer error response and translate (may be gzip)
+        const isGzip = proxyRes.headers['content-encoding'] === 'gzip'
+        const stream = isGzip ? proxyRes.pipe(createGunzip()) : proxyRes
         const errChunks: Buffer[] = []
-        proxyRes.on('data', (c: Buffer) => errChunks.push(c))
-        proxyRes.on('end', () => {
+        stream.on('data', (c: Buffer) => errChunks.push(c))
+        stream.on('end', () => {
           let errBody: any
           try { errBody = JSON.parse(Buffer.concat(errChunks).toString('utf-8')) } catch { errBody = {} }
           const translated = anthropicErrorToOpenai(status, errBody)
@@ -407,16 +413,13 @@ async function handleRequest(
     }
   }
   if (isOpenAI && result.status !== 200) {
-    log('info', `OpenAI error translation: status=${result.status}, isOpenAI=${isOpenAI}`)
     try {
       const errBody = JSON.parse(result.body.toString('utf-8'))
       const translated = Buffer.from(JSON.stringify(anthropicErrorToOpenai(result.status, errBody)), 'utf-8')
       result.body = translated
       result.headers['content-length'] = String(translated.length)
       result.headers['content-type'] = 'application/json'
-    } catch (e) {
-      log('error', `OpenAI error translation failed: ${e}`)
-    }
+    } catch {}
   }
   res.writeHead(result.status, result.headers)
   res.end(result.body)
