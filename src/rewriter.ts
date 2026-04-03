@@ -1,5 +1,18 @@
 import type { Config } from './config.js'
 import { log } from './logger.js'
+import { createHash } from 'crypto'
+
+const FINGERPRINT_SALT = '59cf53e54c78'
+
+function computeFingerprint(firstUserMessage: string, version: string): string {
+  const c4 = firstUserMessage[4] || ''
+  const c7 = firstUserMessage[7] || ''
+  const c20 = firstUserMessage[20] || ''
+  return createHash('sha256')
+    .update(FINGERPRINT_SALT + c4 + c7 + c20 + version)
+    .digest('hex')
+    .slice(0, 3)
+}
 
 /**
  * Rewrite identity fields in the API request body.
@@ -37,6 +50,21 @@ export function rewriteBody(body: Buffer, path: string, config: Config): Buffer 
  * Key field: metadata.user_id (JSON-stringified object with device_id, account_uuid, session_id)
  */
 function rewriteMessagesBody(body: any, config: Config) {
+  // Extract first user message for fingerprint computation
+  let firstUserMsg = ''
+  if (Array.isArray(body.messages)) {
+    for (const msg of body.messages) {
+      if (msg.role === 'user') {
+        if (typeof msg.content === 'string') firstUserMsg = msg.content
+        else if (Array.isArray(msg.content)) {
+          for (const b of msg.content) { if (b?.text) { firstUserMsg = b.text; break } }
+        }
+        break
+      }
+    }
+  }
+  const fingerprint = firstUserMsg ? computeFingerprint(firstUserMsg, String(config.env.version)) : '000'
+
   // Rewrite metadata.user_id
   if (body?.metadata?.user_id) {
     try {
@@ -54,24 +82,24 @@ function rewriteMessagesBody(body: any, config: Config) {
     for (let i = 0; i < body.system.length; i++) {
       const item = body.system[i]
       if (typeof item === 'string') {
-        body.system[i] = rewritePromptText(item, config)
+        body.system[i] = rewritePromptText(item, config, fingerprint)
       } else if (item?.text) {
-        item.text = rewritePromptText(item.text, config)
+        item.text = rewritePromptText(item.text, config, fingerprint)
       }
     }
   } else if (typeof body.system === 'string') {
-    body.system = rewritePromptText(body.system, config)
+    body.system = rewritePromptText(body.system, config, fingerprint)
   }
 
   // Rewrite user messages that may contain <system-reminder> with env info
   if (Array.isArray(body.messages)) {
     for (const msg of body.messages) {
       if (typeof msg.content === 'string') {
-        msg.content = rewritePromptText(msg.content, config)
+        msg.content = rewritePromptText(msg.content, config, fingerprint)
       } else if (Array.isArray(msg.content)) {
         for (const block of msg.content) {
           if (block?.text) {
-            block.text = rewritePromptText(block.text, config)
+            block.text = rewritePromptText(block.text, config, fingerprint)
           }
         }
       }
@@ -87,16 +115,16 @@ function rewriteMessagesBody(body: any, config: Config) {
  * 3. Inline environment references (Primary working directory, etc.)
  * 4. Home directory paths that leak username
  */
-function rewritePromptText(text: string, config: Config): string {
+function rewritePromptText(text: string, config: Config, fingerprint = '000'): string {
   const pe = config.prompt_env
   if (!pe) return text
 
   let result = text
 
-  // 1. Billing header fingerprint
+  // 1. Billing header fingerprint — use computed fingerprint from first user message
   result = result.replace(
     /cc_version=[\d.]+\.[a-f0-9]{3}/g,
-    `cc_version=${config.env.version}.000`,
+    `cc_version=${config.env.version}.${fingerprint}`,
   )
 
   // 2. <env> block format (older prompt format):
@@ -309,9 +337,6 @@ export function rewriteHeaders(
   // Ensure Claude Code identity headers are present (needed for OAuth auth)
   if (!out['user-agent']) {
     out['user-agent'] = `claude-code/${config.env.version} (external, cli)`
-  }
-  if (!out['x-anthropic-billing-header']) {
-    out['x-anthropic-billing-header'] = `cc_version=${config.env.version}.000; cc_entrypoint=cli;`
   }
 
   return out

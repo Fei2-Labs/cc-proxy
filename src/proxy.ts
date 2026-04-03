@@ -139,6 +139,26 @@ async function handleRequest(
   // Inject the real OAuth token (replaces whatever the client sent)
   rewrittenHeaders['authorization'] = `Bearer ${oauthToken}`
 
+  // Ensure billing header exists with valid fingerprint
+  if (!rewrittenHeaders['x-anthropic-billing-header']) {
+    let fp = '000'
+    try {
+      const parsed = JSON.parse(body.toString('utf-8'))
+      if (Array.isArray(parsed.messages)) {
+        for (const m of parsed.messages) {
+          if (m.role === 'user') {
+            const txt = typeof m.content === 'string' ? m.content : m.content?.[0]?.text || ''
+            const { createHash } = await import('crypto')
+            const salt = '59cf53e54c78'
+            fp = createHash('sha256').update(salt + (txt[4]||'') + (txt[7]||'') + (txt[20]||'') + config.env.version).digest('hex').slice(0, 3)
+            break
+          }
+        }
+      }
+    } catch {}
+    rewrittenHeaders['x-anthropic-billing-header'] = `cc_version=${config.env.version}.${fp}; cc_entrypoint=cli;`
+  }
+
   // Forward to upstream
   const upstreamUrl = new URL(path, upstream)
 
