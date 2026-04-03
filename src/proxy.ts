@@ -308,14 +308,16 @@ async function handleRequest(
     try {
       const anthropicRes = JSON.parse(result.body.toString('utf-8'))
       const openaiRes = anthropicToOpenai(anthropicRes, openaiModel)
-      result.body = Buffer.from(JSON.stringify(openaiRes), 'utf-8')
-      result.headers['content-length'] = String(result.body.length)
-      log('debug', `Translated Anthropic→OpenAI response for ${openaiModel}`)
-    } catch (err) {
-      log('error', `OpenAI response translation failed: ${err}`)
+      const translated = Buffer.from(JSON.stringify(openaiRes), 'utf-8')
+      result.body = translated
+      result.headers['content-length'] = String(translated.length)
+      result.headers['x-proxy-translated'] = 'openai'
+    } catch (err: any) {
+      result.headers['x-proxy-translation-error'] = err?.message || 'unknown'
     }
-  } else if (isOpenAI) {
-    log('warn', `OpenAI request but status=${result.status}, skipping translation`)
+  }
+  if (isOpenAI && result.status !== 200) {
+    result.headers['x-proxy-openai-skip'] = `status=${result.status}`
   }
   res.writeHead(result.status, result.headers)
   res.end(result.body)
