@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check } from 'lucide-react'
 
@@ -19,11 +19,15 @@ function OAuthContent() {
   const success = searchParams.get('success')
   const error = searchParams.get('error')
 
-  const refreshStatus = () => {
+  const refreshStatus = useCallback(() => {
     fetch('/api/oauth/status').then(r => r.ok ? r.json() : null).then(d => d && setOauthStatus(d))
-  }
+  }, [])
 
-  useEffect(() => { refreshStatus() }, [])
+  useEffect(() => {
+    refreshStatus()
+    const interval = setInterval(refreshStatus, 5000)
+    return () => clearInterval(interval)
+  }, [refreshStatus])
 
   const handleSave = async () => {
     setSaving(true)
@@ -36,8 +40,8 @@ function OAuthContent() {
       })
       if (res.ok) {
         setManualToken('')
-        setMsg('Token saved. Refreshing status...')
-        setTimeout(refreshStatus, 2000)
+        setMsg('Token saved!')
+        refreshStatus()
       } else {
         setMsg('Failed to save token')
       }
@@ -48,19 +52,18 @@ function OAuthContent() {
     }
   }
 
-  const oneliner = `T=$(security find-generic-password -a "$USER" -s "Claude Code-credentials" -w 2>/dev/null || cat ~/.claude/.credentials.json) && R=$(echo "$T" | python3 -c "import sys,json;print(json.load(sys.stdin)['claudeAiOauth']['refreshToken'])") && curl -s -X POST ${typeof window !== 'undefined' ? window.location.origin : ''}/api/oauth/save -H "Content-Type: application/json" -b "cc-session=$(document.cookie)" -d "{\\"token\\":\\"$R\\"}" && echo "✅ Token uploaded"`
-
-  const getCommand = () => {
-    const cookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('cc-session='))
-    const session = cookie?.split('=').slice(1).join('=') || 'YOUR_SESSION'
-    const origin = window.location.origin
-    return `T=$(security find-generic-password -a "$USER" -s "Claude Code-credentials" -w 2>/dev/null || cat ~/.claude/.credentials.json) && R=$(echo "$T" | python3 -c "import sys,json;print(json.load(sys.stdin)['claudeAiOauth']['refreshToken'])") && curl -s -X POST ${origin}/api/oauth/save -H "Content-Type: application/json" -H "Cookie: cc-session=${session}" -d "{\\"token\\":\\"$R\\"}" && echo " ✅ Token uploaded to portal"`
-  }
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(getCommand())
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopy = async () => {
+    try {
+      const res = await fetch('/api/oauth/generate-code', { method: 'POST' })
+      const { code } = await res.json()
+      const origin = window.location.origin
+      const cmd = `T=$(security find-generic-password -a "$USER" -s "Claude Code-credentials" -w 2>/dev/null || cat ~/.claude/.credentials.json) && R=$(echo "$T" | python3 -c "import sys,json;print(json.load(sys.stdin)['claudeAiOauth']['refreshToken'])") && curl -s -X POST ${origin}/api/oauth/upload -H "Content-Type: application/json" -d "{\\"token\\":\\"$R\\",\\"code\\":\\"${code}\\"}" && echo " ✅ Token uploaded"`
+      await navigator.clipboard.writeText(cmd)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 3000)
+    } catch {
+      setMsg('Failed to generate upload code')
+    }
   }
 
   const statusConfig = {
@@ -82,7 +85,6 @@ function OAuthContent() {
           <p className="text-green-400 text-sm">OAuth connected successfully.</p>
         </div>
       )}
-
       {error && (
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6">
           <p className="text-red-400 text-sm">OAuth error: {decodeURIComponent(error)}</p>
@@ -116,26 +118,20 @@ function OAuthContent() {
         </div>
       </div>
 
-      {/* Quick extract */}
       <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-6 mt-4">
         <p className="font-medium mb-1">Quick Extract</p>
         <p className="text-sm text-[hsl(var(--muted-foreground))] mb-3">
-          Run this on a Mac where Claude Code is logged in. It extracts the token and uploads it here automatically.
+          Copy this command and run it in Terminal on a Mac where Claude Code is logged in.
+          The token uploads automatically. Status updates within 5 seconds.
         </p>
-        <div className="flex gap-2">
-          <div className="flex-1 bg-[hsl(var(--muted))] rounded-md px-3 py-2 text-xs font-mono text-[hsl(var(--muted-foreground))] overflow-x-auto whitespace-nowrap">
-            bash -c &quot;$(copy the command)&quot;
-          </div>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 bg-[hsl(var(--primary))] text-white rounded-md px-4 py-2 text-sm font-medium hover:opacity-90"
-          >
-            {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy command</>}
-          </button>
-        </div>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 bg-[hsl(var(--primary))] text-white rounded-md px-4 py-2 text-sm font-medium hover:opacity-90"
+        >
+          {copied ? <><Check size={14} /> Copied! Paste in Terminal</> : <><Copy size={14} /> Copy extract command</>}
+        </button>
       </div>
 
-      {/* Manual paste */}
       <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-6 mt-4">
         <p className="font-medium mb-1">Manual Paste</p>
         <p className="text-sm text-[hsl(var(--muted-foreground))] mb-3">
