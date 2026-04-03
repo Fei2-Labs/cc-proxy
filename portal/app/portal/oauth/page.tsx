@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check } from 'lucide-react'
+import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check, RefreshCw } from 'lucide-react'
 
 type OAuthStatusType = {
   status: 'valid' | 'expired' | 'error' | 'not_configured'
@@ -14,7 +14,9 @@ function OAuthContent() {
   const [manualToken, setManualToken] = useState('')
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+  const [msgType, setMsgType] = useState<'success' | 'error' | ''>('')
   const [copied, setCopied] = useState(false)
+  const [retrying, setRetrying] = useState(false)
   const searchParams = useSearchParams()
   const success = searchParams.get('success')
   const error = searchParams.get('error')
@@ -41,14 +43,39 @@ function OAuthContent() {
       if (res.ok) {
         setManualToken('')
         setMsg('Token saved!')
+        setMsgType('success')
         refreshStatus()
       } else {
         setMsg('Failed to save token')
+        setMsgType('error')
       }
     } catch {
       setMsg('Network error')
+      setMsgType('error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleRetry = async () => {
+    setRetrying(true)
+    setMsg('')
+    try {
+      const res = await fetch(`/api/oauth/retry`, { method: 'POST' })
+      const data = await res.json()
+      if (data.ok) {
+        setMsg('Token refreshed successfully!')
+        setMsgType('success')
+      } else {
+        setMsg(data.error || 'Refresh failed — token may be revoked. Re-login to Claude Code and extract again.')
+        setMsgType('error')
+      }
+      refreshStatus()
+    } catch {
+      setMsg('Network error')
+      setMsgType('error')
+    } finally {
+      setRetrying(false)
     }
   }
 
@@ -63,6 +90,7 @@ function OAuthContent() {
       setTimeout(() => setCopied(false), 3000)
     } catch {
       setMsg('Failed to generate upload code')
+      setMsgType('error')
     }
   }
 
@@ -75,6 +103,7 @@ function OAuthContent() {
 
   const cfg = oauthStatus ? statusConfig[oauthStatus.status] : null
   const StatusIcon = cfg?.icon || Shield
+  const needsToken = oauthStatus?.status === 'expired' || oauthStatus?.status === 'not_configured' || oauthStatus?.status === 'error'
 
   return (
     <div>
@@ -105,24 +134,53 @@ function OAuthContent() {
                   : oauthStatus?.status === 'not_configured'
                   ? 'No token configured'
                   : oauthStatus?.status === 'expired'
-                  ? 'Token expired — upload a new one'
+                  ? 'Token expired or revoked'
                   : 'Loading...'}
               </p>
             </div>
           </div>
-          {cfg && (
-            <span className={`px-2 py-0.5 rounded-full text-xs ${cfg.bg} ${cfg.color}`}>
-              {cfg.label}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {cfg && (
+              <span className={`px-2 py-0.5 rounded-full text-xs ${cfg.bg} ${cfg.color}`}>
+                {cfg.label}
+              </span>
+            )}
+            {oauthStatus?.status === 'expired' && (
+              <button
+                onClick={handleRetry}
+                disabled={retrying}
+                className="flex items-center gap-1.5 bg-[hsl(var(--accent))] text-[hsl(var(--foreground))] rounded-md px-3 py-1.5 text-sm hover:opacity-90 disabled:opacity-50"
+              >
+                <RefreshCw size={14} className={retrying ? 'animate-spin' : ''} />
+                {retrying ? 'Retrying...' : 'Retry refresh'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {msg && (
+        <div className={`rounded-lg p-4 mt-4 ${msgType === 'error' ? 'bg-red-900/20 border border-red-800' : 'bg-green-900/20 border border-green-800'}`}>
+          <p className={`text-sm ${msgType === 'error' ? 'text-red-400' : 'text-green-400'}`}>{msg}</p>
+        </div>
+      )}
+
+      {needsToken && (
+        <div className="bg-yellow-900/10 border border-yellow-800/50 rounded-lg p-4 mt-4">
+          <p className="text-yellow-400 text-sm font-medium mb-1">How to fix</p>
+          <ol className="text-sm text-[hsl(var(--muted-foreground))] list-decimal list-inside space-y-1">
+            <li>Open Terminal on a Mac where Claude Code is installed</li>
+            <li>Run <code className="bg-[hsl(var(--muted))] px-1 py-0.5 rounded text-xs">claude</code> and complete the browser login if prompted</li>
+            <li>Click <strong>Copy extract command</strong> below and paste it in Terminal</li>
+            <li>This page updates automatically once the token is received</li>
+          </ol>
+        </div>
+      )}
 
       <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-6 mt-4">
         <p className="font-medium mb-1">Quick Extract</p>
         <p className="text-sm text-[hsl(var(--muted-foreground))] mb-3">
-          Copy this command and run it in Terminal on a Mac where Claude Code is logged in.
-          The token uploads automatically. Status updates within 5 seconds.
+          Extracts the token from your Mac&apos;s Keychain and uploads it here automatically.
         </p>
         <button
           onClick={handleCopy}
@@ -153,7 +211,6 @@ function OAuthContent() {
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
-        {msg && <p className="text-sm mt-2 text-[hsl(var(--muted-foreground))]">{msg}</p>}
       </div>
     </div>
   )
