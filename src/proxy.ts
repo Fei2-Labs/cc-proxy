@@ -407,13 +407,16 @@ async function handleRequest(
     }
   }
   if (isOpenAI && result.status !== 200) {
+    log('info', `OpenAI error translation: status=${result.status}, isOpenAI=${isOpenAI}`)
     try {
       const errBody = JSON.parse(result.body.toString('utf-8'))
       const translated = Buffer.from(JSON.stringify(anthropicErrorToOpenai(result.status, errBody)), 'utf-8')
       result.body = translated
       result.headers['content-length'] = String(translated.length)
       result.headers['content-type'] = 'application/json'
-    } catch {}
+    } catch (e) {
+      log('error', `OpenAI error translation failed: ${e}`)
+    }
   }
   res.writeHead(result.status, result.headers)
   res.end(result.body)
