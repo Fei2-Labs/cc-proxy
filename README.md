@@ -105,15 +105,14 @@ Add these environment variables on each client machine. No browser login needed.
 # Route all Claude Code traffic through the gateway
 export ANTHROPIC_BASE_URL="https://gateway.your-domain.com:8443"
 
-# Disable side-channel telemetry (Datadog, GrowthBook, version checks)
-export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
-
 # Skip browser OAuth — gateway handles authentication
 export CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"
 
 # Authenticate to the gateway
 export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer YOUR_TOKEN"
 ```
+
+> **Note:** Do NOT set `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`. Disabling telemetry is itself a risk signal — the gateway rewrites telemetry data instead of blocking it.
 
 Or run the interactive setup script:
 
@@ -179,7 +178,7 @@ Client machines                        CC Gateway                    Anthropic
 
 | Layer | Mechanism | What it prevents |
 |-------|-----------|-----------------|
-| Env vars | `ANTHROPIC_BASE_URL` + `DISABLE_NONESSENTIAL` + `OAUTH_TOKEN` | CC voluntarily routes to gateway, disables side channels, skips browser login |
+| Env vars | `ANTHROPIC_BASE_URL` + `OAUTH_TOKEN` | CC voluntarily routes to gateway, skips browser login; telemetry is rewritten, not blocked |
 | Clash | Domain-based REJECT rules | Any accidental or future direct connections to Anthropic |
 | Gateway | Body + header + prompt rewriting | All 40+ fingerprint dimensions normalized to one device |
 

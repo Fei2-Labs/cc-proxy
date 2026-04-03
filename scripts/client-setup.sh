@@ -29,8 +29,6 @@ ENV_BLOCK="
 # === CC Gateway ===
 # Route all Claude Code API traffic through the gateway
 export ANTHROPIC_BASE_URL=\"$GATEWAY_URL\"
-# Disable all side-channel telemetry (Datadog, GrowthBook, updates)
-export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 # Placeholder token - gateway injects the real OAuth token
 export CLAUDE_CODE_OAUTH_TOKEN=\"gateway-managed\"
 # Gateway proxy auth - your personal access token
@@ -42,14 +40,13 @@ echo "Will add to: $RC_FILE"
 echo ""
 echo "Environment variables:"
 echo "  ANTHROPIC_BASE_URL=$GATEWAY_URL"
-echo "  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1"
 echo "  CLAUDE_CODE_OAUTH_TOKEN=gateway-managed"
 echo "  ANTHROPIC_CUSTOM_HEADERS=Proxy-Authorization: Bearer <token>"
 echo ""
 echo "Effect:"
 echo "  - All API traffic routes through gateway (no direct Anthropic contact)"
 echo "  - Gateway injects real OAuth token (no browser login needed)"
-echo "  - Telemetry side-channels disabled"
+echo "  - Telemetry is preserved (disabling it is a risk signal)"
 echo ""
 
 read -p "Continue? [y/N] " -n 1 -r

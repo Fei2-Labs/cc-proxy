@@ -9,6 +9,7 @@ import { getAccessToken } from './oauth.js'
 import { rewriteBody, rewriteHeaders } from './rewriter.js'
 import { audit, log } from './logger.js'
 import { logRequest, setSetting } from './db.js'
+import { checkRateLimit } from './rate-limit.js'
 
 export function createProxyHandler(config: Config) {
   const upstream = new URL(config.upstream.url)
@@ -101,6 +102,14 @@ async function handleRequest(
     res.writeHead(503, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ error: 'OAuth token not available - gateway is refreshing' }))
     log('error', 'No valid OAuth token available')
+    return
+  }
+
+  // Rate limit to prevent unnatural usage patterns across shared identity
+  if (!checkRateLimit(path)) {
+    res.writeHead(429, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ error: 'Rate limited - too many requests per minute' }))
+    log('warn', `Rate limited ${clientName}: ${method} ${path}`)
     return
   }
 

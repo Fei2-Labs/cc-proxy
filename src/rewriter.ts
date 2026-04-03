@@ -167,6 +167,12 @@ function rewriteEventBatch(body: any, config: Config) {
     // detectGateway() adds gateway type if base URL matches known providers
     delete data.gateway
 
+    // Rewrite locale/timezone fields if present at top level
+    if (data.tz) data.tz = config.locale?.tz || 'America/New_York'
+    if (data.lang) data.lang = config.locale?.lang || 'en_US.UTF-8'
+    if (data.lc_all) data.lc_all = config.locale?.lc_all || 'en_US.UTF-8'
+    if (data.timezone) data.timezone = config.locale?.tz || 'America/New_York'
+
     // Additional metadata - rewrite base64-encoded blob if present
     if (data.additional_metadata) {
       data.additional_metadata = rewriteAdditionalMetadata(data.additional_metadata, config)
@@ -209,6 +215,10 @@ function buildCanonicalEnv(config: Config): Record<string, unknown> {
     build_time: config.env.build_time,
     deployment_environment: config.env.deployment_environment,
     vcs: config.env.vcs,
+    // Locale/timezone alignment with IP geolocation
+    tz: config.locale?.tz || 'America/New_York',
+    lang: config.locale?.lang || 'en_US.UTF-8',
+    lc_all: config.locale?.lc_all || 'en_US.UTF-8',
   }
 }
 

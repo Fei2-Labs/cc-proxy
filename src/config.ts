@@ -29,6 +29,12 @@ export type Config = {
     email: string
   }
   env: Record<string, string | boolean | number>
+  // Locale/timezone alignment — must match IP geolocation
+  locale: {
+    tz: string           // e.g. "America/New_York"
+    lang: string         // e.g. "en_US.UTF-8"
+    lc_all: string       // e.g. "en_US.UTF-8"
+  }
   // System prompt environment masking - must be consistent with env above
   prompt_env: {
     platform: string        // "darwin" — must match env.platform
@@ -61,6 +67,9 @@ export function loadConfig(configPath?: string): Config {
   }
   if (!config.oauth) {
     config.oauth = { refresh_token: '' }
+  }
+  if (!config.locale) {
+    config.locale = { tz: 'America/New_York', lang: 'en_US.UTF-8', lc_all: 'en_US.UTF-8' }
   }
 
   return config

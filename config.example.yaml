@@ -65,6 +65,13 @@ prompt_env:
   os_version: "Darwin 24.4.0"        # uname -sr output
   working_dir: /Users/jack/projects   # Canonical home directory path prefix
 
+# Locale/timezone alignment — MUST match IP geolocation
+# IP in New York but TZ=Asia/Shanghai is the most common giveaway
+locale:
+  tz: America/New_York
+  lang: en_US.UTF-8
+  lc_all: en_US.UTF-8
+
 # Canonical process metrics (should look like a real machine)
 process:
   constrained_memory: 34359738368  # 32GB - pick a realistic value
