@@ -306,5 +306,13 @@ export function rewriteHeaders(
     }
   }
 
+  // Ensure Claude Code identity headers are present (needed for OAuth auth)
+  if (!out['user-agent']) {
+    out['user-agent'] = `claude-code/${config.env.version} (external, cli)`
+  }
+  if (!out['x-anthropic-billing-header']) {
+    out['x-anthropic-billing-header'] = `cc_version=${config.env.version}.000; cc_entrypoint=cli;`
+  }
+
   return out
 }
