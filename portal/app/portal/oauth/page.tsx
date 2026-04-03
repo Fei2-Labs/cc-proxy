@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Shield, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Shield, CheckCircle, XCircle, AlertCircle, Copy, Check } from 'lucide-react'
 
 type OAuthStatusType = {
   status: 'valid' | 'expired' | 'error' | 'not_configured'
@@ -14,6 +14,7 @@ function OAuthContent() {
   const [manualToken, setManualToken] = useState('')
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+  const [copied, setCopied] = useState(false)
   const searchParams = useSearchParams()
   const success = searchParams.get('success')
   const error = searchParams.get('error')
@@ -45,6 +46,21 @@ function OAuthContent() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const oneliner = `T=$(security find-generic-password -a "$USER" -s "Claude Code-credentials" -w 2>/dev/null || cat ~/.claude/.credentials.json) && R=$(echo "$T" | python3 -c "import sys,json;print(json.load(sys.stdin)['claudeAiOauth']['refreshToken'])") && curl -s -X POST ${typeof window !== 'undefined' ? window.location.origin : ''}/api/oauth/save -H "Content-Type: application/json" -b "cc-session=$(document.cookie)" -d "{\\"token\\":\\"$R\\"}" && echo "✅ Token uploaded"`
+
+  const getCommand = () => {
+    const cookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('cc-session='))
+    const session = cookie?.split('=').slice(1).join('=') || 'YOUR_SESSION'
+    const origin = window.location.origin
+    return `T=$(security find-generic-password -a "$USER" -s "Claude Code-credentials" -w 2>/dev/null || cat ~/.claude/.credentials.json) && R=$(echo "$T" | python3 -c "import sys,json;print(json.load(sys.stdin)['claudeAiOauth']['refreshToken'])") && curl -s -X POST ${origin}/api/oauth/save -H "Content-Type: application/json" -H "Cookie: cc-session=${session}" -d "{\\"token\\":\\"$R\\"}" && echo " ✅ Token uploaded to portal"`
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(getCommand())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   const statusConfig = {
@@ -82,12 +98,12 @@ function OAuthContent() {
             <div>
               <p className="font-medium">Anthropic OAuth</p>
               <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                {oauthStatus?.status === 'valid' && oauthStatus.expiresAt
-                  ? `Token expires ${new Date(oauthStatus.expiresAt).toLocaleString()}`
+                {oauthStatus?.status === 'valid'
+                  ? 'Token active — proxy is forwarding requests'
                   : oauthStatus?.status === 'not_configured'
-                  ? 'Paste a refresh token to start proxying'
+                  ? 'No token configured'
                   : oauthStatus?.status === 'expired'
-                  ? 'Token expired — paste a new refresh token'
+                  ? 'Token expired — upload a new one'
                   : 'Loading...'}
               </p>
             </div>
@@ -100,10 +116,30 @@ function OAuthContent() {
         </div>
       </div>
 
+      {/* Quick extract */}
       <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-6 mt-4">
-        <p className="font-medium mb-1">Refresh Token</p>
-        <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4">
-          Run <code className="bg-[hsl(var(--muted))] px-1.5 py-0.5 rounded text-xs">bash scripts/extract-token.sh</code> on a machine logged into Claude Code, then paste the token here.
+        <p className="font-medium mb-1">Quick Extract</p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))] mb-3">
+          Run this on a Mac where Claude Code is logged in. It extracts the token and uploads it here automatically.
+        </p>
+        <div className="flex gap-2">
+          <div className="flex-1 bg-[hsl(var(--muted))] rounded-md px-3 py-2 text-xs font-mono text-[hsl(var(--muted-foreground))] overflow-x-auto whitespace-nowrap">
+            bash -c &quot;$(copy the command)&quot;
+          </div>
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 bg-[hsl(var(--primary))] text-white rounded-md px-4 py-2 text-sm font-medium hover:opacity-90"
+          >
+            {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy command</>}
+          </button>
+        </div>
+      </div>
+
+      {/* Manual paste */}
+      <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-6 mt-4">
+        <p className="font-medium mb-1">Manual Paste</p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))] mb-3">
+          Or paste a refresh token directly.
         </p>
         <div className="flex gap-2">
           <input
