@@ -10,3 +10,6 @@ data/
 .DS_Store
 menubar/CCProxyHelper
 macos-app/CCProxy.app
+macos-app/CCProxy.dmg
+macos-app/*.icns
+macos-app/icon_*.png
