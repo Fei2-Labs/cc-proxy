@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { COOKIE_NAME } from '@/lib/auth'
-import { getSetting, setSetting } from '../../../../../src/db'
+import { getSetting, setSetting } from '../../../../src/db'
 
 const CACHE_KEY = 'cached_models'
 const CACHE_TS_KEY = 'cached_models_ts'
