@@ -3,7 +3,9 @@
 
 const windows: Map<string, number[]> = new Map()
 
-export function checkRateLimit(path: string, maxPerMinute = 30): boolean {
+const MAX_PER_MINUTE = Number(process.env.RATE_LIMIT_PER_MINUTE) || 30
+
+export function checkRateLimit(path: string): boolean {
   // Only limit API calls, not telemetry
   if (!path.startsWith('/v1/')) return true
 
@@ -15,7 +17,7 @@ export function checkRateLimit(path: string, maxPerMinute = 30): boolean {
   const cutoff = now - 60_000
   const recent = timestamps.filter(t => t > cutoff)
 
-  if (recent.length >= maxPerMinute) return false
+  if (recent.length >= MAX_PER_MINUTE) return false
 
   recent.push(now)
   windows.set(key, recent)
