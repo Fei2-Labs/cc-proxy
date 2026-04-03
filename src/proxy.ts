@@ -412,6 +412,7 @@ async function handleRequest(
       const translated = Buffer.from(JSON.stringify(anthropicErrorToOpenai(result.status, errBody)), 'utf-8')
       result.body = translated
       result.headers['content-length'] = String(translated.length)
+      result.headers['content-type'] = 'application/json'
     } catch {}
   }
   res.writeHead(result.status, result.headers)
