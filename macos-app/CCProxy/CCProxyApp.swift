@@ -279,8 +279,8 @@ struct SetupView: View {
                 TextField("https://cc.swedexpress.store", text: $settings.serverURL)
                     .textFieldStyle(.roundedBorder)
 
-                Text("Admin Password").font(.caption).foregroundColor(.secondary)
-                SecureField("Password", text: $settings.apiKey)
+                Text("Server Key").font(.caption).foregroundColor(.secondary)
+                SecureField("Same as ADMIN_PASSWORD on server", text: $settings.apiKey)
                     .textFieldStyle(.roundedBorder)
             }
 
