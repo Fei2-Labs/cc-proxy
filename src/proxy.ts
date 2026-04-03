@@ -242,6 +242,7 @@ async function handleRequest(
   })
 
   let result: UpstreamResult
+  let fallbackUsed: string | null = null
   try {
     result = await sendUpstream(body)
 
@@ -254,7 +255,7 @@ async function handleRequest(
         parsed.model = fb
         const fbBody = Buffer.from(JSON.stringify(parsed), 'utf-8')
         result = await sendUpstream(fbBody)
-        if (result.status !== 429) break
+        if (result.status !== 429) { fallbackUsed = fb; break }
       }
     }
   } catch (err: any) {
@@ -266,6 +267,17 @@ async function handleRequest(
     logRequest({ client_name: clientName, method, path, status: 502, latency_ms: Date.now() - startTime })
     if (config.logging.audit) audit(clientName, method, path, 502)
     return
+  }
+
+  // Inject fallback info into response
+  if (fallbackUsed && result.status === 200) {
+    try {
+      const json = JSON.parse(result.body.toString('utf-8'))
+      json._fallback = { original_model: requestModel, used_model: fallbackUsed, reason: 'rate_limit' }
+      result.body = Buffer.from(JSON.stringify(json), 'utf-8')
+    } catch {}
+    result.headers['x-model-fallback'] = `${requestModel} -> ${fallbackUsed}`
+    log('info', `Fallback: ${requestModel} -> ${fallbackUsed} for ${clientName}`)
   }
 
   // Send response to client
@@ -305,7 +317,7 @@ async function handleRequest(
     }
   } catch {}
 
-  logRequest({ client_name: clientName, method, path, model, input_tokens: inputTokens, output_tokens: outputTokens, cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens, status: result.status, latency_ms: latencyMs })
+  logRequest({ client_name: clientName, method, path, model: fallbackUsed ? `${requestModel} → ${model || fallbackUsed}` : model, input_tokens: inputTokens, output_tokens: outputTokens, cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens, status: result.status, latency_ms: latencyMs })
 
   const rlHeaders = ['x-ratelimit-limit-requests', 'x-ratelimit-limit-tokens', 'x-ratelimit-remaining-requests', 'x-ratelimit-remaining-tokens', 'x-ratelimit-reset-requests', 'x-ratelimit-reset-tokens']
   for (const h of rlHeaders) { const val = result.headers[h]; if (val) try { setSetting(`ratelimit_${h}`, String(val)) } catch {} }
