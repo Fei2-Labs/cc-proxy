@@ -14,7 +14,7 @@ import { loadConfig } from './src/config.js'
 import { setLogLevel, log } from './src/logger.js'
 import { initOAuth, reinitOAuth } from './src/oauth.js'
 import { createProxyHandler } from './src/proxy.js'
-import { initDatabase, importConfigTokens, getSetting } from './src/db.js'
+import { initDatabase, getSetting } from './src/db.js'
 import { resolve } from 'path'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -32,13 +32,7 @@ async function main() {
   initDatabase(dbPath)
   log('info', `Database initialized: ${dbPath}`)
 
-  // Import config.yaml tokens into SQLite on first run
-  if (config.auth.tokens.length > 0) {
-    const imported = importConfigTokens(config.auth.tokens)
-    if (imported > 0) {
-      log('info', `Imported ${imported} token(s) from config.yaml`)
-    }
-  }
+  // Tokens are managed via the portal UI — no config.yaml import
 
   // Initialize OAuth (SQLite first, config.yaml fallback)
   const storedRefreshToken = getSetting('oauth_refresh_token')

@@ -1,21 +1,15 @@
+version: "3.8"
 services:
-  gateway:
+  app:
     build: .
     ports:
       - "8443:8443"
     volumes:
-      - ./config.yaml:/app/config.yaml:ro
-      - gateway-data:/app/data
+      - ccproxy-data:/app/data
     environment:
       - NODE_ENV=production
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - PORTAL_DATA_DIR=/app/data
     restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 volumes:
-  gateway-data:
+  ccproxy-data:
