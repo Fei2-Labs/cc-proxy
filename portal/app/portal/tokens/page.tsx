@@ -7,6 +7,7 @@ type Token = {
   id: number
   name: string
   prefix: string
+  token: string | null
   active: boolean
   lastUsedAt: string | null
   createdAt: string
@@ -134,12 +135,12 @@ export default function TokensPage() {
             {tokens.length === 0 ? (
               <tr><td colSpan={5} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]">No tokens yet</td></tr>
             ) : tokens.map(t => (
-              <tr key={t.id} onClick={() => setSelectedToken(t.prefix + '...')} className="border-b border-[hsl(var(--border))] last:border-0 cursor-pointer hover:bg-[hsl(var(--accent))]">
+              <tr key={t.id} onClick={() => setSelectedToken(t.token || t.prefix + '...')} className="border-b border-[hsl(var(--border))] last:border-0 cursor-pointer hover:bg-[hsl(var(--accent))]">
                 <td className="px-4 py-3 font-medium">{t.name}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
-                    <code className="font-mono text-[hsl(var(--muted-foreground))] text-xs">{t.prefix}...</code>
-                    <CopyButton text={t.prefix + '...'} />
+                    <code className="font-mono text-[hsl(var(--muted-foreground))] text-xs">{t.token ? t.token.slice(0, 12) + '...' : t.prefix + '...'}</code>
+                    <CopyButton text={t.token || t.prefix + '...'} />
                   </div>
                 </td>
                 <td className="px-4 py-3">

@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     id: t.id,
     name: t.name,
     prefix: t.token_prefix,
+    token: t.token_raw || null,
     active: t.active === 1,
     lastUsedAt: t.last_used_at,
     createdAt: t.created_at,

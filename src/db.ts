@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS tokens (
   name TEXT UNIQUE NOT NULL,
   token_hash TEXT NOT NULL,
   token_prefix TEXT NOT NULL,
+  token_raw TEXT,
   active INTEGER NOT NULL DEFAULT 1,
   last_used_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -55,6 +56,7 @@ export type DbToken = {
   name: string
   token_hash: string
   token_prefix: string
+  token_raw: string | null
   active: number
   last_used_at: string | null
   created_at: string
@@ -66,6 +68,8 @@ export function initDatabase(dbPath: string): Database.Database {
   db.pragma('journal_mode = WAL')
   db.pragma('foreign_keys = ON')
   db.exec(SCHEMA)
+  // Migration: add token_raw column if missing
+  try { db.exec('ALTER TABLE tokens ADD COLUMN token_raw TEXT') } catch {}
   return db
 }
 
@@ -99,8 +103,8 @@ export function createToken(name: string, token: string): DbToken {
   const token_hash = hashToken(token)
   const token_prefix = token.slice(0, 8)
   getDatabase().prepare(
-    'INSERT INTO tokens (name, token_hash, token_prefix) VALUES (?, ?, ?)'
-  ).run(name, token_hash, token_prefix)
+    'INSERT INTO tokens (name, token_hash, token_prefix, token_raw) VALUES (?, ?, ?, ?)'
+  ).run(name, token_hash, token_prefix, token)
   return getDatabase().prepare('SELECT * FROM tokens WHERE name = ?').get(name) as DbToken
 }
 
