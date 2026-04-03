@@ -31,6 +31,7 @@ export default function TokensPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
+  const [selectedTokenName, setSelectedTokenName] = useState('')
   const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
   const [models, setModels] = useState<{ id: string; name: string }[]>([])
   const [modelsLoading, setModelsLoading] = useState(false)
@@ -68,6 +69,7 @@ export default function TokensPage() {
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Failed'); return }
       setSelectedToken(data.token)
+      setSelectedTokenName(name.trim())
       setName('')
       fetchTokens()
     } catch { setError('Network error') }
@@ -125,7 +127,7 @@ export default function TokensPage() {
             {tokens.length === 0 ? (
               <tr><td colSpan={5} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]">No tokens yet</td></tr>
             ) : tokens.map(t => (
-              <tr key={t.id} onClick={() => setSelectedToken(t.token || t.prefix + '...')} className="border-b border-[hsl(var(--border))] last:border-0 cursor-pointer hover:bg-[hsl(var(--accent))]">
+              <tr key={t.id} onClick={() => { setSelectedToken(t.token || t.prefix + '...'); setSelectedTokenName(t.name) }} className="border-b border-[hsl(var(--border))] last:border-0 cursor-pointer hover:bg-[hsl(var(--accent))]">
                 <td className="px-4 py-3 font-medium">{t.name}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
@@ -152,8 +154,8 @@ export default function TokensPage() {
 
       <h2 className="text-lg font-bold font-mono mb-4">API Usage</h2>
       <div className="flex items-center gap-4 mb-4">
-        {selectedToken !== 'YOUR_TOKEN' && (
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">Token: <code className="bg-[hsl(var(--muted))] px-1 rounded">{selectedToken.length > 20 ? selectedToken.slice(0, 20) + '...' : selectedToken}</code></p>
+        {selectedTokenName && (
+          <p className="text-xs text-[hsl(var(--muted-foreground))]">Token: <code className="bg-[hsl(var(--muted))] px-1 rounded">{selectedTokenName}</code></p>
         )}
         <select
           value={selectedModel}
