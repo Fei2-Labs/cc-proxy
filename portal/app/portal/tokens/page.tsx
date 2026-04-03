@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Copy, Check, Plus, Trash2 } from 'lucide-react'
+import { Copy, Check, Plus, Trash2, RefreshCw } from 'lucide-react'
 
 type Token = {
   id: number
@@ -32,13 +32,30 @@ export default function TokensPage() {
   const [loading, setLoading] = useState(false)
   const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
   const [selectedTokenName, setSelectedTokenName] = useState('')
+  const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
+  const [models, setModels] = useState<{ id: string; name: string }[]>([])
+  const [modelsLoading, setModelsLoading] = useState(false)
+
+  const fetchModels = async (refresh = false) => {
+    setModelsLoading(true)
+    try {
+      const res = await fetch(`/api/models${refresh ? '?refresh=1' : ''}`)
+      if (res.ok) {
+        const data = await res.json()
+        setModels(data.models)
+        if (data.models.length && !data.models.find((m: any) => m.id === selectedModel)) {
+          setSelectedModel(data.models[0].id)
+        }
+      }
+    } catch {} finally { setModelsLoading(false) }
+  }
 
   const fetchTokens = async () => {
     const res = await fetch('/api/tokens')
     if (res.ok) setTokens((await res.json()).tokens)
   }
 
-  useEffect(() => { fetchTokens() }, [])
+  useEffect(() => { fetchTokens(); fetchModels() }, [])
 
   const handleCreate = async () => {
     if (!name.trim()) return
@@ -140,9 +157,24 @@ export default function TokensPage() {
         {selectedTokenName && (
           <p className="text-xs text-[hsl(var(--muted-foreground))]">Token: <code className="bg-[hsl(var(--muted))] px-1 rounded">{selectedTokenName}</code></p>
         )}
+        <select
+          value={selectedModel}
+          onChange={e => setSelectedModel(e.target.value)}
+          className="bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-md px-2 py-1 text-xs"
+        >
+          {models.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+        </select>
+        <button
+          onClick={() => fetchModels(true)}
+          disabled={modelsLoading}
+          className="p-1 hover:bg-[hsl(var(--accent))] rounded text-[hsl(var(--muted-foreground))]"
+          title="Refresh models"
+        >
+          <RefreshCw size={14} className={modelsLoading ? 'animate-spin' : ''} />
+        </button>
       </div>
 
-      <div className="space-y-4" key={selectedToken}>
+      <div className="space-y-4" key={selectedToken + selectedModel}>
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Claude Code setup</p>
@@ -157,19 +189,19 @@ export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`}
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">curl</p>
-            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer ${selectedToken}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"claude-sonnet-4-6","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
+            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer ${selectedToken}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"${selectedModel}","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`curl -X POST ${origin}/v1/messages \\
   -H "Authorization: Bearer ${selectedToken}" \\
   -H "Content-Type: application/json" \\
-  -d '{"model":"claude-sonnet-4-6","max_tokens":256,
+  -d '{"model":"${selectedModel}","max_tokens":256,
        "messages":[{"role":"user","content":"Hello"}]}'`}</pre>
         </div>
 
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Python</p>
-            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="${selectedToken}",\n)\n\nmsg = client.messages.create(\n    model="claude-sonnet-4-6",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(msg.content[0].text)`} />
+            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="${selectedToken}",\n)\n\nmsg = client.messages.create(\n    model="${selectedModel}",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(msg.content[0].text)`} />
           </div>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`import anthropic
 
@@ -179,7 +211,7 @@ client = anthropic.Anthropic(
 )
 
 msg = client.messages.create(
-    model="claude-sonnet-4-6",
+    model="${selectedModel}",
     max_tokens=256,
     messages=[{"role": "user", "content": "Hello"}],
 )
