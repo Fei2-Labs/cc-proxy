@@ -285,10 +285,11 @@ struct SetupView: View {
             }
 
             Button("Save") {
-                configured = !settings.serverURL.isEmpty && !settings.apiKey.isEmpty
+                // Force a publish to trigger view update
+                settings.objectWillChange.send()
             }
             .buttonStyle(.borderedProminent)
-            .disabled(settings.serverURL.isEmpty || settings.apiKey.isEmpty)
+            .disabled(settings.serverURL.trimmingCharacters(in: .whitespaces).isEmpty || settings.apiKey.trimmingCharacters(in: .whitespaces).isEmpty)
 
             Button("Quit") { NSApp.terminate(nil) }
                 .buttonStyle(.plain)
@@ -314,7 +315,7 @@ struct MainView: View {
                     .frame(width: 10, height: 10)
                 Text(statusLabel).font(.headline)
                 Spacer()
-                Button(action: { configured = false }) {
+                Button(action: { settings.serverURL = "" }) {
                     Image(systemName: "gear").foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -393,18 +394,12 @@ struct CCProxyApp: App {
     @StateObject var settings = AppSettings()
     @State var configured: Bool = false
 
-    init() {
-        let s = UserDefaults.standard.string(forKey: "serverURL") ?? ""
-        let k = UserDefaults.standard.string(forKey: "apiKey") ?? ""
-        _configured = State(initialValue: !s.isEmpty && !k.isEmpty)
-    }
-
     var body: some Scene {
         MenuBarExtra("CC Proxy", systemImage: "shield.lefthalf.filled.badge.checkmark") {
-            if configured {
-                MainView(configured: $configured).environmentObject(settings)
-            } else {
+            if settings.serverURL.isEmpty || settings.apiKey.isEmpty {
                 SetupView(configured: $configured).environmentObject(settings)
+            } else {
+                MainView(configured: $configured).environmentObject(settings)
             }
         }
         .menuBarExtraStyle(.window)
