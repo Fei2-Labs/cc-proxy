@@ -33,13 +33,12 @@ export default function TokensPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [selectedToken, setSelectedToken] = useState('YOUR_TOKEN')
-  const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-20250514')
+  const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
 
   const models = [
-    { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
-    { id: 'claude-opus-4-20250514', name: 'Claude Opus 4' },
-    { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet' },
-    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
+    { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6' },
+    { id: 'claude-opus-4-6', name: 'Claude Opus 4.6' },
+    { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5' },
   ]
 
   const fetchTokens = async () => {
