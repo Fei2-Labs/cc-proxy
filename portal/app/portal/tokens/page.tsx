@@ -174,7 +174,7 @@ export default function TokensPage() {
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4" key={selectedToken + selectedModel}>
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Client environment variables</p>
