@@ -1,17 +1,18 @@
+# syntax=docker/dockerfile:1
 FROM node:22-slim AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 COPY tsconfig.json server.ts ./
 COPY src/ src/
 COPY portal/ portal/
 COPY config.example.yaml ./
-# cache bust: v2
 
 RUN pnpm run build
 
