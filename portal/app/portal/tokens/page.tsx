@@ -148,7 +148,7 @@ export default function TokensPage() {
             <p className="text-sm font-medium">Claude Code setup</p>
             <CopyButton text={`export ANTHROPIC_BASE_URL="${origin}"\nexport CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"\nexport ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`} />
           </div>
-          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-3">Add to your shell profile (~/.zshrc or ~/.bashrc), then run <code className="bg-[hsl(var(--muted))] px-1 rounded">claude</code> normally.</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-3">Add to ~/.zshrc or ~/.bashrc, then run <code className="bg-[hsl(var(--muted))] px-1 rounded">claude</code> normally.</p>
           <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`export ANTHROPIC_BASE_URL="${origin}"
 export CLAUDE_CODE_OAUTH_TOKEN="gateway-managed"
 export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`}</pre>
@@ -156,11 +156,34 @@ export ANTHROPIC_CUSTOM_HEADERS="Proxy-Authorization: Bearer ${selectedToken}"`}
 
         <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium">Quick test</p>
-            <CopyButton text={`claude -p "Hello"`} />
+            <p className="text-sm font-medium">curl</p>
+            <CopyButton text={`curl -X POST ${origin}/v1/messages \\\n  -H "Authorization: Bearer ${selectedToken}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"claude-sonnet-4-6","max_tokens":256,"messages":[{"role":"user","content":"Hello"}]}'`} />
           </div>
-          <p className="text-xs text-[hsl(var(--muted-foreground))] mb-3">After setting the env vars, verify it works:</p>
-          <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`claude -p "Hello"`}</pre>
+          <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`curl -X POST ${origin}/v1/messages \\
+  -H "Authorization: Bearer ${selectedToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model":"claude-sonnet-4-6","max_tokens":256,
+       "messages":[{"role":"user","content":"Hello"}]}'`}</pre>
+        </div>
+
+        <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-medium">Python</p>
+            <CopyButton text={`import anthropic\n\nclient = anthropic.Anthropic(\n    base_url="${origin}",\n    api_key="${selectedToken}",\n)\n\nmsg = client.messages.create(\n    model="claude-sonnet-4-6",\n    max_tokens=256,\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(msg.content[0].text)`} />
+          </div>
+          <pre className="bg-[hsl(var(--muted))] rounded p-3 text-xs font-mono overflow-x-auto text-[hsl(var(--muted-foreground))]">{`import anthropic
+
+client = anthropic.Anthropic(
+    base_url="${origin}",
+    api_key="${selectedToken}",
+)
+
+msg = client.messages.create(
+    model="claude-sonnet-4-6",
+    max_tokens=256,
+    messages=[{"role": "user", "content": "Hello"}],
+)
+print(msg.content[0].text)`}</pre>
         </div>
       </div>
     </div>

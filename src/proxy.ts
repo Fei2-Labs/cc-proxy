@@ -138,6 +138,8 @@ async function handleRequest(
 
   // Inject the real OAuth token (replaces whatever the client sent)
   rewrittenHeaders['authorization'] = `Bearer ${oauthToken}`
+  rewrittenHeaders['x-api-key'] = oauthToken
+  rewrittenHeaders['anthropic-version'] = rewrittenHeaders['anthropic-version'] || '2023-06-01'
 
   // Forward to upstream
   const upstreamUrl = new URL(path, upstream)
