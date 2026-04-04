@@ -13,5 +13,24 @@ export async function GET(request: NextRequest) {
     limits[k] = getSetting(`ratelimit_${k}`)
   }
 
-  return NextResponse.json({ limits })
+  // Unified subscription rate limit headers
+  const unifiedKeys = [
+    'anthropic-ratelimit-unified-status',
+    'anthropic-ratelimit-unified-reset',
+    'anthropic-ratelimit-unified-representative-claim',
+    'anthropic-ratelimit-unified-5h-status',
+    'anthropic-ratelimit-unified-5h-reset',
+    'anthropic-ratelimit-unified-5h-utilization',
+    'anthropic-ratelimit-unified-7d-status',
+    'anthropic-ratelimit-unified-7d-reset',
+    'anthropic-ratelimit-unified-7d-utilization',
+    'anthropic-ratelimit-unified-fallback',
+    'anthropic-ratelimit-unified-fallback-percentage',
+  ]
+  const unified: Record<string, string | undefined> = {}
+  for (const k of unifiedKeys) {
+    unified[k] = getSetting(`ratelimit_${k}`)
+  }
+
+  return NextResponse.json({ limits, unified })
 }

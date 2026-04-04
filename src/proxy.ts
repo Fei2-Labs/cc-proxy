@@ -19,6 +19,49 @@ let xxh64fn: ((input: Uint8Array, seed: bigint) => bigint) | null = null
 
 xxhash().then(h => { xxh64fn = h.h64Raw }).catch(() => {})
 
+/** Extract and log unified rate limit status from Anthropic 429 response headers */
+function extractRateLimitInfo(headers: Record<string, any>): Record<string, string> {
+  const rlKeys = [
+    'anthropic-ratelimit-unified-status',
+    'anthropic-ratelimit-unified-reset',
+    'anthropic-ratelimit-unified-representative-claim',
+    'anthropic-ratelimit-unified-5h-status',
+    'anthropic-ratelimit-unified-5h-reset',
+    'anthropic-ratelimit-unified-5h-utilization',
+    'anthropic-ratelimit-unified-7d-status',
+    'anthropic-ratelimit-unified-7d-reset',
+    'anthropic-ratelimit-unified-7d-utilization',
+    'anthropic-ratelimit-unified-fallback',
+    'anthropic-ratelimit-unified-fallback-percentage',
+  ]
+  const info: Record<string, string> = {}
+  for (const k of rlKeys) {
+    const val = headers[k]
+    if (val) info[k] = String(val)
+  }
+  return info
+}
+
+function logRateLimitStatus(model: string, headers: Record<string, any>) {
+  const info = extractRateLimitInfo(headers)
+  if (Object.keys(info).length === 0) return
+
+  const claim = info['anthropic-ratelimit-unified-representative-claim'] || '?'
+  const status5h = info['anthropic-ratelimit-unified-5h-status'] || '?'
+  const util5h = info['anthropic-ratelimit-unified-5h-utilization'] || '?'
+  const status7d = info['anthropic-ratelimit-unified-7d-status'] || '?'
+  const util7d = info['anthropic-ratelimit-unified-7d-utilization'] || '?'
+  const fallback = info['anthropic-ratelimit-unified-fallback'] || 'none'
+  const fallbackPct = info['anthropic-ratelimit-unified-fallback-percentage'] || '?'
+
+  log('warn', `Rate limit hit for ${model}: claim=${claim} 5h=${status5h}(${util5h}) 7d=${status7d}(${util7d}) fallback=${fallback}(${fallbackPct})`)
+
+  // Persist unified headers for portal dashboard
+  for (const [k, v] of Object.entries(info)) {
+    try { setSetting(`ratelimit_${k}`, v) } catch {}
+  }
+}
+
 function computeCch(body: Buffer): string {
   if (!xxh64fn) return '00000'
   const hash = xxh64fn(new Uint8Array(body), CCH_SEED)
@@ -285,6 +328,7 @@ async function handleRequest(
           // Drain the error response
           proxyRes.resume()
           const nextModel = modelsToTry[modelIndex + 1]
+          logRateLimitStatus(String(modelsToTry[modelIndex]), proxyRes.headers as Record<string, any>)
           log('info', `Stream model ${modelsToTry[modelIndex]} rate-limited, falling back to ${nextModel}`)
           try {
             const parsed = JSON.parse(streamBody.toString('utf-8'))
@@ -395,6 +439,7 @@ async function handleRequest(
 
     // On 429 rate limit, try fallback models
     if (result.status === 429 && isMessages && requestModel) {
+      logRateLimitStatus(requestModel, result.headers)
       const fallbacks = MODEL_FALLBACKS[requestModel] || []
       for (const fb of fallbacks) {
         log('info', `Model ${requestModel} rate-limited, falling back to ${fb}`)
@@ -489,6 +534,12 @@ async function handleRequest(
 
   const rlHeaders = ['x-ratelimit-limit-requests', 'x-ratelimit-limit-tokens', 'x-ratelimit-remaining-requests', 'x-ratelimit-remaining-tokens', 'x-ratelimit-reset-requests', 'x-ratelimit-reset-tokens']
   for (const h of rlHeaders) { const val = result.headers[h]; if (val) try { setSetting(`ratelimit_${h}`, String(val)) } catch {} }
+
+  // Also capture unified rate limit headers from every response (not just 429s)
+  const unifiedInfo = extractRateLimitInfo(result.headers)
+  for (const [k, v] of Object.entries(unifiedInfo)) {
+    try { setSetting(`ratelimit_${k}`, v) } catch {}
+  }
 
   if (config.logging.audit) audit(clientName, method, path, result.status)
 }
