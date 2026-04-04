@@ -70,6 +70,8 @@ export function initDatabase(dbPath: string): Database.Database {
   db.exec(SCHEMA)
   // Migration: add token_raw column if missing
   try { db.exec('ALTER TABLE tokens ADD COLUMN token_raw TEXT') } catch {}
+  // Migration: add rate_limit_info column if missing
+  try { db.exec('ALTER TABLE request_logs ADD COLUMN rate_limit_info TEXT') } catch {}
   return db
 }
 
@@ -154,18 +156,19 @@ export type RequestLog = {
   cache_creation_tokens?: number
   status: number
   latency_ms: number
+  rate_limit_info?: string
 }
 
 export function logRequest(entry: RequestLog): void {
   try {
     getDatabase().prepare(
-      `INSERT INTO request_logs (client_name, method, path, model, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, status, latency_ms)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO request_logs (client_name, method, path, model, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, status, latency_ms, rate_limit_info)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       entry.client_name, entry.method, entry.path,
       entry.model ?? null, entry.input_tokens ?? null, entry.output_tokens ?? null,
       entry.cache_read_tokens ?? null, entry.cache_creation_tokens ?? null,
-      entry.status, entry.latency_ms
+      entry.status, entry.latency_ms, entry.rate_limit_info ?? null
     )
   } catch {
     // Never let logging failures affect proxy
@@ -238,6 +241,7 @@ export type LogEntry = {
   cache_creation_tokens: number | null
   status: number
   latency_ms: number
+  rate_limit_info: string | null
   created_at: string
 }
 

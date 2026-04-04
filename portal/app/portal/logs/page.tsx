@@ -15,6 +15,7 @@ type Log = {
   cache_creation_tokens: number | null
   status: number
   latency_ms: number
+  rate_limit_info: string | null
   created_at: string
 }
 
@@ -137,7 +138,7 @@ export default function LogsPage() {
                   <td className="px-4 py-2 text-[hsl(var(--muted-foreground))] text-xs">{fmt(l.created_at)}</td>
                   <td className="px-4 py-2">{l.client_name}</td>
                   <td className="px-4 py-2 font-mono text-xs text-[hsl(var(--muted-foreground))]">{l.method} {l.path}</td>
-                  <td className="px-4 py-2 text-[hsl(var(--muted-foreground))]">{l.model || '\u2014'}</td>
+                  <td className="px-4 py-2 text-[hsl(var(--muted-foreground))]">{l.rate_limit_info ? <span title={l.rate_limit_info}>⚠ </span> : ''}{l.model || '\u2014'}</td>
                   <td className="px-4 py-2">{statusBadge(l.status)}</td>
                   <td className="px-4 py-2 text-right font-mono text-[hsl(var(--muted-foreground))]">{l.latency_ms}ms</td>
                 </tr>
@@ -154,6 +155,11 @@ export default function LogsPage() {
                         <div><span className="text-[hsl(var(--muted-foreground))]">Status:</span> <span className="font-mono">{l.status}</span></div>
                         <div><span className="text-[hsl(var(--muted-foreground))]">Latency:</span> <span className="font-mono">{l.latency_ms}ms</span></div>
                       </div>
+                      {l.rate_limit_info && (
+                        <div className="mt-3 px-3 py-2 rounded bg-yellow-900/20 border border-yellow-800/30 text-yellow-400 text-xs font-mono">
+                          ⚠ Rate limited: {l.rate_limit_info}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )}

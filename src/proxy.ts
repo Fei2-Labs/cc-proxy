@@ -315,6 +315,7 @@ async function handleRequest(
   // Streaming path for OpenAI-compatible requests
   if (isOpenAI && isOpenAIStream) {
     const modelsToTry = [requestModel, ...(requestModel ? MODEL_FALLBACKS[requestModel] || [] : [])]
+    const fallbackChain: string[] = [] // track 429'd models
 
     const tryStreamModel = (modelIndex: number, streamBody: Buffer) => {
       const proxyReq = httpsRequest(upstreamUrl, {
@@ -330,6 +331,7 @@ async function handleRequest(
           const nextModel = modelsToTry[modelIndex + 1]
           const retryAfter = proxyRes.headers['retry-after']
           log('warn', `429 for ${modelsToTry[modelIndex]}${retryAfter ? ` (retry-after: ${retryAfter}s)` : ''} → falling back to ${nextModel}`)
+          fallbackChain.push(`${modelsToTry[modelIndex]}→429`)
           logRateLimitStatus(String(modelsToTry[modelIndex]), proxyRes.headers as Record<string, any>)
           try {
             const parsed = JSON.parse(streamBody.toString('utf-8'))
@@ -421,6 +423,7 @@ async function handleRequest(
             model: fallbackUsed ? `${modelsToTry[0]} → ${streamModel || fallbackUsed}` : streamModel,
             input_tokens: inputTokens, output_tokens: outputTokens,
             status: 200, latency_ms: Date.now() - startTime,
+            rate_limit_info: fallbackChain.length > 0 ? fallbackChain.join(', ') + ` → ${streamModel || fallbackUsed}(ok)` : undefined,
           })
           if (fallbackUsed) log('info', `Stream fallback: ${modelsToTry[0]} -> ${fallbackUsed} for ${clientName}`)
           if (config.logging.audit) audit(clientName, method, path, 200)
@@ -546,7 +549,7 @@ async function handleRequest(
     }
   } catch {}
 
-  logRequest({ client_name: clientName, method, path, model: fallbackUsed ? `${requestModel} → ${model || fallbackUsed}` : model, input_tokens: inputTokens, output_tokens: outputTokens, cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens, status: result.status, latency_ms: latencyMs })
+  logRequest({ client_name: clientName, method, path, model: fallbackUsed ? `${requestModel} → ${model || fallbackUsed}` : model, input_tokens: inputTokens, output_tokens: outputTokens, cache_read_tokens: cacheReadTokens, cache_creation_tokens: cacheCreationTokens, status: result.status, latency_ms: latencyMs, rate_limit_info: fallbackUsed ? `${requestModel}→429, ${fallbackUsed}(ok)` : undefined })
 
   const rlHeaders = ['x-ratelimit-limit-requests', 'x-ratelimit-limit-tokens', 'x-ratelimit-remaining-requests', 'x-ratelimit-remaining-tokens', 'x-ratelimit-reset-requests', 'x-ratelimit-reset-tokens']
   for (const h of rlHeaders) { const val = result.headers[h]; if (val) try { setSetting(`ratelimit_${h}`, String(val)) } catch {} }
