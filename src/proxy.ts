@@ -359,7 +359,8 @@ async function handleRequest(
         proxyRes.on('end', () => {
           if (!res.writableEnded) res.end()
           logRequest({
-            client_name: clientName, method, path, model: streamModel,
+            client_name: clientName, method, path,
+            model: fallbackUsed ? `${modelsToTry[0]} → ${streamModel || fallbackUsed}` : streamModel,
             input_tokens: inputTokens, output_tokens: outputTokens,
             status: 200, latency_ms: Date.now() - startTime,
           })
