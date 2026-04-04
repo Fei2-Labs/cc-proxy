@@ -328,6 +328,16 @@ async function handleRequest(
           // Drain the error response
           proxyRes.resume()
           const nextModel = modelsToTry[modelIndex + 1]
+          // Log ALL response headers on 429 for debugging rate limit detection
+          const rl429Headers: Record<string, string> = {}
+          for (const [k, v] of Object.entries(proxyRes.headers)) {
+            if (k.includes('ratelimit') || k.includes('retry')) rl429Headers[k] = String(v)
+          }
+          if (Object.keys(rl429Headers).length > 0) {
+            log('warn', `429 headers for ${modelsToTry[modelIndex]}:`, rl429Headers)
+          } else {
+            log('warn', `429 for ${modelsToTry[modelIndex]} — no rate limit headers returned`)
+          }
           logRateLimitStatus(String(modelsToTry[modelIndex]), proxyRes.headers as Record<string, any>)
           log('info', `Stream model ${modelsToTry[modelIndex]} rate-limited, falling back to ${nextModel}`)
           try {
@@ -402,6 +412,13 @@ async function handleRequest(
 
         proxyRes.on('end', () => {
           if (!res.writableEnded) res.end()
+
+          // Capture unified rate limit headers from successful streaming responses
+          const streamRlInfo = extractRateLimitInfo(proxyRes.headers as Record<string, any>)
+          for (const [k, v] of Object.entries(streamRlInfo)) {
+            try { setSetting(`ratelimit_${k}`, v) } catch {}
+          }
+
           logRequest({
             client_name: clientName, method, path,
             model: fallbackUsed ? `${modelsToTry[0]} → ${streamModel || fallbackUsed}` : streamModel,
@@ -439,6 +456,15 @@ async function handleRequest(
 
     // On 429 rate limit, try fallback models
     if (result.status === 429 && isMessages && requestModel) {
+      const rl429Headers: Record<string, string> = {}
+      for (const [k, v] of Object.entries(result.headers)) {
+        if (k.includes('ratelimit') || k.includes('retry')) rl429Headers[k] = String(v)
+      }
+      if (Object.keys(rl429Headers).length > 0) {
+        log('warn', `429 headers for ${requestModel}:`, rl429Headers)
+      } else {
+        log('warn', `429 for ${requestModel} — no rate limit headers returned`)
+      }
       logRateLimitStatus(requestModel, result.headers)
       const fallbacks = MODEL_FALLBACKS[requestModel] || []
       for (const fb of fallbacks) {
